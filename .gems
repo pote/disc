@@ -1,3 +1,5 @@
-disque -v 0.0.6
 cutest -v 1.2.2
 byebug -v 5.0.0
+disque -v 0.0.6
+msgpack -v 0.6.1
+celluloid -v 0.17.0
