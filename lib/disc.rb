@@ -77,7 +77,11 @@ class Disc
           rescue => err
             Disc.on_error(err, job)
           ensure
-            instance.disc_done(err)
+            begin
+              instance.disc_done(err)
+            rescue => boom
+              Disc.on_error(boom, job)
+            end
           end
         end
       end
