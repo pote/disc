@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.description = 'Easily define and run background jobs using Disque'
   s.authors     = ['pote']
   s.email       = ['pote@tardis.com.uy']
-  s.homepage    = 'https://github.com/pote/disque-job'
+  s.homepage    = 'https://github.com/pote/disc'
   s.license     = 'MIT'
   s.files       = `git ls-files`.split("\n")
 
