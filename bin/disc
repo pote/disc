@@ -18,7 +18,6 @@ if defined?(Celluloid)
   end
 
   Disc::WorkerGroup.run
-
 else
   STDOUT.puts(
     "[Notice] Disc running in non-threaded mode, make sure to `require 'cellulloid'`\
