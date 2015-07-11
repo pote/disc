@@ -93,11 +93,16 @@ Dir["./jobs/**/*.rb"].each { |job| require job }
 
 ## PowerUps
 
-Disc workers can run just fine on their own, but if you're using [Celluloid](https://github.com/celluloid/celluloid) you migth want Disc to take advantage of it and spawn multiple worker threads per process, doing this is trivial! Just require Celluloid in your `DISC_REQUIRE` file.
+Disc workers can run just fine on their own, but if you're using
+[Celluloid](https://github.com/celluloid/celluloid) you migth want Disc to take
+advantage of it and spawn multiple worker threads per process, doing this is
+trivial! Just require Celluloid in your `DISC_REQUIRE` file.
 
 ```ruby
 # disq_init.rb
-require 'celluloid'
+require 'celluloid/current'
 ```
 
-Whenever Disc detects that Celluloid is available it will use it to  spawn a number of threads equal to the `DISC_CONCURRENCY` environment variable, or 25 by default.
+Whenever Disc detects that Celluloid is available it will use it to  spawn a
+number of threads equal to the `DISC_CONCURRENCY` environment variable, or 25 by
+default.

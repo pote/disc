@@ -31,8 +31,6 @@ class Disc
   end
 
   class Worker
-    include Celluloid if defined?(Celluloid)
-
     attr_reader :disque,
                 :queues,
                 :timeout,
@@ -62,7 +60,6 @@ class Disc
 
       self
     end
-
 
     def run
       STDOUT.puts("Disc::Worker listening in #{queues}")

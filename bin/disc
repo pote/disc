@@ -10,14 +10,24 @@ if defined?(Celluloid)
  #{ concurrency }."
   )
 
-  class Disc::WorkerGroup < Celluloid::SupervisionGroup
-    pool Disc::Worker,
-          size: ENV.fetch('DISC_CONCURRENCY', '25').to_i,
-          as: :worker_pool,
-          args: [{ run: true }]
-  end
+  Disc::Worker.send(:include, Celluloid)
 
-  Disc::WorkerGroup.run
+  if defined?(Celluloid::SupervisionGroup)
+    # Deprecated as of Celluloid 0.17, but still supported via "backported mode"
+    class Disc::WorkerGroup < Celluloid::SupervisionGroup
+      pool Disc::Worker,
+            size: ENV.fetch('DISC_CONCURRENCY', '25').to_i,
+            as: :worker_pool,
+            args: [{ run: true }]
+    end
+
+    Disc::WorkerGroup.run
+  else
+    Disc::Worker.pool(
+      size: concurrency,
+      args: [{ run: true }]
+    )
+  end
 else
   STDOUT.puts(
     "[Notice] Disc running in non-threaded mode, consider requiring celluloid\
