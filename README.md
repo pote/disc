@@ -46,19 +46,13 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
   ```ruby
 # disc_init.rb
   require 'ohm'
-  Dir.glob('jobs/**/*.rb') { |f| require_relative f }
-  ```
-
-6. Set your require file
-
-  ```bash
-  $ export DISC_REQUIRE='./disc_init.rb'
+  Dir['./jobs/**/*.rb'].each { |job| require job }
   ```
 
 7. Run as many Disc Worker processes as you wish.
 
   ```bash
-  $ QUEUES=urgent,default disc
+  $ QUEUES=urgent,default disc -r ./disc_init.rb
   ```
 
 ## Settings
@@ -67,7 +61,6 @@ Disc takes its configuration from environment variables.
 
 | ENV Variable     |  Default Value   | Description
 |:----------------:|:-----------------|:------------|
-| DISC_REQUIRE     | null             | Ruby file that will be required by the worker processes, it should load all Disc::Job classes on your application and whatever else is needed to run them.
 | QUEUES           | 'default'        | The list of queues that `Disc::Worker` will listen to, it can be a single queue name or a list of comma-separated queues |
 | DISC_CONCURRENCY | '25'             | Amount of threads to spawn when Celluloid is available. |
 | DISQUE_NODES     | 'localhost:7711' | This is the list of Disque servers to connect to, it can be a single node or a list of comma-separated nodes |
@@ -96,11 +89,10 @@ Dir["./jobs/**/*.rb"].each { |job| require job }
 Disc workers can run just fine on their own, but if you're using
 [Celluloid](https://github.com/celluloid/celluloid) you migth want Disc to take
 advantage of it and spawn multiple worker threads per process, doing this is
-trivial! Just require Celluloid in your `DISC_REQUIRE` file.
+trivial! Just require Celluloid before your init file:
 
-```ruby
-# disq_init.rb
-require 'celluloid/current'
+```bash
+$ QUEUES=urgent,default disc -r celluloid/current -r ./disc_init.rb
 ```
 
 Whenever Disc detects that Celluloid is available it will use it to  spawn a

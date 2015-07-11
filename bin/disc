@@ -1,7 +1,10 @@
 #!/usr/bin/env ruby
 
 require 'disc'
-require ENV.fetch('DISC_REQUIRE')
+require 'clap'
+
+Clap.run ARGV,
+  "-r" => lambda { |file| require file }
 
 if defined?(Celluloid)
   concurrency = ENV.fetch('DISC_CONCURRENCY', '25').to_i
