@@ -118,7 +118,7 @@ class Disc
           queue,
           args.to_msgpack,
           Disc.disque_timeout,
-          delay: at.nil? ? nil : (datetime.to_time.to_i - DateTime.now.to_time.to_i)
+          delay: datetime && (datetime.to_time.to_i - DateTime.now.to_time.to_i)
         )
       end
 
