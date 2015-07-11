@@ -75,7 +75,6 @@ Disc takes its configuration from environment variables.
 | DISQUE_TIMEOUT   | '100'            | Time in milliseconds that the client will wait for the Disque server to acknowledge and replicate a job |
 | DISQUE_CYCLE     | '1000'           | The client keeps track of which nodes are providing more jobs, after the amount of operations specified in cycle it tries to connect to the preferred node. |
 
-
 ## Error handling
 
 When a job raises an exception, `Disc.on_error` is invoked with the error and
@@ -90,6 +89,36 @@ end
 
 Dir["./jobs/**/*.rb"].each { |job| require job }
 ```
+
+## Lifecycle Callbacks
+
+You can optionally define two methods on classes that include `Disc::Job` that
+will act as callbacks:
+
+``` ruby
+def disc_start(job)
+end
+
+def disc_done(exception_or_nil)
+end
+```
+
+Before the `perform` method is invoked, Disc will call `disc_start` and pass the
+job data as a Hash. After the job is finished, it will call `disc_done`.
+
+You could use these callbacks for things like aggregating metrics about the jobs
+(timing, number of times a certain job is run, etc), or for advanced logging,
+for example.
+
+## Job Definition
+
+Both the error handler function and the `disc_start` callback get the data of
+the current job as a Hash, that has the following schema.
+
+| `'class'`     | (String) The Job class.                               |
+| `'arguments'` | (Array) The arguments passed to perform.              |
+| `'queue'`     | (String) The queue from which this job was picked up. |
+| `'id'`        | (String) Disque's job ID.                             |
 
 ## PowerUps
 

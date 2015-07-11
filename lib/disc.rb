@@ -67,14 +67,23 @@ class Disc
       STDOUT.puts("Disc::Worker listening in #{queues}")
       loop do
         jobs = disque.fetch(from: queues, timeout: timeout, count: count)
-        Array(jobs).each do |_, msgid, serialized_job|
+        Array(jobs).each do |queue, msgid, serialized_job|
           job = MessagePack.unpack(serialized_job)
-          klass = Object.const_get(job['class'])
+          job.update('id' => msgid, 'queue' => queue)
+
+          instance = Object.const_get(job['class']).new
           begin
-            klass.new.perform(*job['arguments'])
+            instance.disc_start(job)
+            instance.perform(*job['arguments'])
             disque.call('ACKJOB', msgid)
           rescue => err
             Disc.on_error(err, job)
+          ensure
+            begin
+              instance.disc_done(err)
+            rescue => boom
+              Disc.on_error(boom, job)
+            end
           end
         end
       end
@@ -88,6 +97,12 @@ class Disc
 
     def self.included(base)
       base.extend(ClassMethods)
+    end
+
+    def disc_start(job)
+    end
+
+    def disc_done(error = nil)
     end
 
     module ClassMethods
