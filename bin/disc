@@ -20,7 +20,7 @@ if defined?(Celluloid)
   Disc::WorkerGroup.run
 else
   STDOUT.puts(
-    "[Notice] Disc running in non-threaded mode, make sure to `require 'cellulloid'`\
+    "[Notice] Disc running in non-threaded mode, consider requiring celluloid\
 for a significant powerup!"
   )
   Disc::Worker.run
