@@ -26,6 +26,10 @@ class Disc
     @disque_timeout = timeout
   end
 
+  def self.on_error(exception, job)
+    STDERR.puts exception
+  end
+
   class Worker
     include Celluloid if defined?(Celluloid)
 
@@ -63,14 +67,16 @@ class Disc
     def run
       STDOUT.puts("Disc::Worker listening in #{queues}")
       loop do
-        disque.fetch(
-          from: queues,
-          timeout: timeout,
-          count: count
-        ) do |serialized_job, _|
+        jobs = disque.fetch(from: queues, timeout: timeout, count: count)
+        Array(jobs).each do |_, msgid, serialized_job|
           job = MessagePack.unpack(serialized_job)
           klass = Object.const_get(job['class'])
-          klass.new.perform(*job['arguments'])
+          begin
+            klass.new.perform(*job['arguments'])
+            disque.call('ACKJOB', msgid)
+          rescue => err
+            Disc.on_error(err, job)
+          end
         end
       end
     end

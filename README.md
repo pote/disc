@@ -76,7 +76,20 @@ Disc takes its configuration from environment variables.
 | DISQUE_CYCLE     | '1000'           | The client keeps track of which nodes are providing more jobs, after the amount of operations specified in cycle it tries to connect to the preferred node. |
 
 
+## Error handling
 
+When a job raises an exception, `Disc.on_error` is invoked with the error and
+the job data. By default, this method prints the error to standard error, but
+you can override it to report the error to your favorite error aggregator.
+
+``` ruby
+# On disc_init.rb
+def Disc.on_error(exception, job)
+  # ... report the error
+end
+
+Dir["./jobs/**/*.rb"].each { |job| require job }
+```
 
 ## PowerUps
 
