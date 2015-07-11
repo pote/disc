@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name              = 'disc'
-  s.version           = '0.0.4'
+  s.version           = '0.0.5'
   s.summary           = 'A simple disque and powerful job implementation'
   s.description       = ''
   s.authors           = ['pote']
