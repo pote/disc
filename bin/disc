@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+require 'disc'
+require ENV.fetch('DISC_REQUIRE')
+
+if defined?(Celluloid)
+  concurrency = ENV.fetch('DISC_CONCURRENCY', '25').to_i
+  STDOUT.puts(
+    "[Notice] Disc running in celluloid-mode! Current DISC_CONCURRENCY is\
+ #{ concurrency }."
+  )
+
+  class Disc::WorkerGroup < Celluloid::SupervisionGroup
+    pool Disc::Worker,
+          size: ENV.fetch('DISC_CONCURRENCY', '25').to_i,
+          as: :worker_pool,
+          args: [{ run: true }]
+  end
+
+  Disc::WorkerGroup.run
+
+else
+  STDOUT.puts(
+    "[Notice] Disc running in non-threaded mode, make sure to `require 'cellulloid'`\
+for a significant powerup!"
+  )
+  Disc::Worker.run
+end

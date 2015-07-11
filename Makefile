@@ -1,6 +1,8 @@
 
 console:
-	@irb -r ./lib/disque
+	@irb -r ./lib/disc
 
 test:
-	@cutest -r ./tests/*_test.rb ./tests/*/*_test.rb
+	@cutest -r ./test/*_test.rb #./test/*/*_test.rb
+
+.PHONY: test

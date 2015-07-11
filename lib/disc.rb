@@ -1,9 +1,10 @@
+require 'date'
 require 'disque'
 require 'msgpack'
 
 class Disc
-  attr_reader: :disque,
-               :disque_timeout
+  attr_reader :disque,
+    :disque_timeout
 
   def self.disque
     @disque ||= Disque.new(
@@ -26,6 +27,8 @@ class Disc
   end
 
   class Worker
+    include Celluloid if defined?(Celluloid)
+
     attr_reader :disque,
                 :queues,
                 :timeout,
@@ -35,77 +38,93 @@ class Disc
       new.run
     end
 
-    def initialize(disque: nil , queues: nil, count: 1, timeout: nil)
-      @disque = client || Disc.disque
-      @count, @timeout = count, timeout
+    def initialize(options = {})
+      @disque = options[:disque] || Disc.disque
+      @count = (options[:count] || ENV.fetch('DISQUE_COUNT', '1')).to_i
+      @timeout = (options[:timeout] || ENV.fetch('DISQUE_TIMEOUT', '2000')).to_i
+
       @queues = case
-                when queues.is_a?(Array)
-                  queues
-                when queues.is_a?(String)
-                  queues.split(',')
-                when queues.nil?
-                 ENV.fetch('QUEUES', 'default').split(',')
+                when options[:queues].is_a?(Array)
+                  options[:queues]
+                when options[:queues].is_a?(String)
+                  options[:queues].split(',')
+                when options[:queues].nil?
+                  ENV.fetch('QUEUES', 'default').split(',')
                 else
-                 raise 'Invalid Disque Queues'
+                  raise 'Invalid Disque Queues'
                 end
+
+      self.run if options[:run]
 
       self
     end
 
 
     def run
+      STDOUT.puts("Disc::Worker listening in #{queues}")
       loop do
         disque.fetch(
           from: queues,
           timeout: timeout,
           count: count
         ) do |serialized_job, _|
-          job = Disc::Job.deserialize(MessagePack.unpack(serialized_job))
-          job.perform(job['arguments'])
+          job = MessagePack.unpack(serialized_job)
+          klass = Object.const_get(job['class'])
+          klass.new.perform(job['arguments'])
         end
       end
     end
   end
 
-  class Job
+  module Job
     attr_reader :arguments,
-                :queue
+                :queue,
+                :disque
 
-    def self.disque=(disque)
-      @disque = disque
+    def self.included(base)
+      base.extend(ClassMethods)
     end
 
-    def self.disque
-      defined?(@disque) ? @disque : Disc.disque
-    end
+    module ClassMethods
+      def disque
+        defined?(@disque) ? @disque : Disc.disque
+      end
 
-    def self.queue(name = 'default')
-      @queue ||= name
-    end
+      def disque=(disque)
+        @disque = disque
+      end
 
-    def self.enqueue(*args, time: nil)
-      job = new(args)
+      def queue
+        @queue ||= 'default'
+      end
 
-      disque.push(
-        job.queue,
-        job.serializable.to_msgpack,
-        Disc.disque_timeout,
-        delay: (time.to_i - Time.current.to_i)
-      )
-    end
+      def queue=(queue)
+        @queue = queue
+      end
 
-    def self.deserialize(serialized_job)
-    end
+      def enqueue(*args)
+        disque.push(
+          queue,
+          {
+            class: self.new.class.name,
+            arguments: args
+          }.to_msgpack,
+          Disc.disque_timeout
+        )
+      end
 
-    def initialize(arguments)
-      @arguments = arguments
-    end
+      def enqueue_at(datetime, *args)
+        disque.push(
+          queue,
+          args.to_msgpack,
+          Disc.disque_timeout,
+          delay: at.nil? ? nil : (datetime.to_time.to_i - DateTime.now.to_time.to_i)
+        )
+      end
 
-    def serializable
-      {
-        class:      self.class.name,
-        arguments:  self.arguments
-      }
+      def disc(options = {})
+        self.queue = options.fetch(:queue, 'default')
+      end
     end
   end
 end
