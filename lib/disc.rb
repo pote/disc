@@ -70,7 +70,7 @@ class Disc
         ) do |serialized_job, _|
           job = MessagePack.unpack(serialized_job)
           klass = Object.const_get(job['class'])
-          klass.new.perform(job['arguments'])
+          klass.new.perform(*job['arguments'])
         end
       end
     end
