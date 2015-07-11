@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name              = 'disc'
   s.version           = '0.0.5'
-  s.summary           = 'A simple disque and powerful job implementation'
+  s.summary           = 'A simple and powerful Disque job implementation'
   s.description       = ''
   s.authors           = ['pote']
   s.email             = ['pote@tardis.com.uy']
