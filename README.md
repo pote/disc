@@ -106,3 +106,8 @@ require 'celluloid/current'
 Whenever Disc detects that Celluloid is available it will use it to  spawn a
 number of threads equal to the `DISC_CONCURRENCY` environment variable, or 25 by
 default.
+
+## License
+
+The code is released under an MIT license. See the [LICENSE](./LICENSE) file for
+more information.
