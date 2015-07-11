@@ -2,6 +2,8 @@ require 'date'
 require 'disque'
 require 'msgpack'
 
+require_relative 'disc/version'
+
 class Disc
   attr_reader :disque,
     :disque_timeout
