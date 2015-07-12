@@ -59,14 +59,14 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
 
 Disc takes its configuration from environment variables.
 
-| ENV Variable     |  Default Value   | Description
-|:----------------:|:-----------------|:------------|
-| QUEUES           | 'default'        | The list of queues that `Disc::Worker` will listen to, it can be a single queue name or a list of comma-separated queues |
-| DISC_CONCURRENCY | '25'             | Amount of threads to spawn when Celluloid is available. |
-| DISQUE_NODES     | 'localhost:7711' | This is the list of Disque servers to connect to, it can be a single node or a list of comma-separated nodes |
-| DISQUE_AUTH      | ''               | Authorization credentials for Disque. |
-| DISQUE_TIMEOUT   | '100'            | Time in milliseconds that the client will wait for the Disque server to acknowledge and replicate a job |
-| DISQUE_CYCLE     | '1000'           | The client keeps track of which nodes are providing more jobs, after the amount of operations specified in cycle it tries to connect to the preferred node. |
+| ENV Variable       |  Default Value   | Description
+|:------------------:|:-----------------|:------------|
+| `QUEUES`           | 'default'        | The list of queues that `Disc::Worker` will listen to, it can be a single queue name or a list of comma-separated queues |
+| `DISC_CONCURRENCY` | '25'             | Amount of threads to spawn when Celluloid is available. |
+| `DISQUE_NODES`     | 'localhost:7711' | This is the list of Disque servers to connect to, it can be a single node or a list of comma-separated nodes |
+| `DISQUE_AUTH`      | ''               | Authorization credentials for Disque. |
+| `DISQUE_TIMEOUT`   | '100'            | Time in milliseconds that the client will wait for the Disque server to acknowledge and replicate a job |
+| `DISQUE_CYCLE`     | '1000'           | The client keeps track of which nodes are providing more jobs, after the amount of operations specified in cycle it tries to connect to the preferred node. |
 
 ## Error handling
 
