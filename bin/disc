@@ -9,7 +9,7 @@ Clap.run ARGV,
 if defined?(Celluloid)
   concurrency = ENV.fetch('DISC_CONCURRENCY', '25').to_i
   STDOUT.puts(
-    "[Notice] Disc running in celluloid-mode! Current DISC_CONCURRENCY is\
+    "[Notice] Disc running in celluloid mode! Current DISC_CONCURRENCY is\
  #{ concurrency }."
   )
 
@@ -32,9 +32,6 @@ if defined?(Celluloid)
     )
   end
 else
-  STDOUT.puts(
-    "[Notice] Disc running in non-threaded mode, consider requiring celluloid\
-for a significant powerup!"
-  )
+  STDOUT.puts("[Notice] Disc running in non-threaded mode")
   Disc::Worker.run
 end
