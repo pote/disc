@@ -71,8 +71,8 @@ class Disc
           job = MessagePack.unpack(serialized_job)
           job.update('id' => msgid, 'queue' => queue)
 
-          instance = Object.const_get(job['class']).new
           begin
+            instance = Object.const_get(job['class']).new
             instance.disc_start(job)
             instance.perform(*job['arguments'])
             disque.call('ACKJOB', msgid)
