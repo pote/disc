@@ -92,8 +92,8 @@ class Disc
 
   module Job
     attr_reader :arguments,
-                :queue,
-                :disque
+                :disque,
+                :disc_options
 
     def self.included(base)
       base.extend(ClassMethods)
@@ -114,12 +114,16 @@ class Disc
         @disque = disque
       end
 
-      def queue
-        @queue ||= 'default'
+      def disc(options = {})
+        @disc_options = options
       end
 
-      def queue=(queue)
-        @queue = queue
+      def disc_options
+        @disc_options ||= {}
+      end
+
+      def queue
+        disc_options.fetch(:queue, 'default')
       end
 
       def enqueue(*args)
@@ -140,10 +144,6 @@ class Disc
           Disc.disque_timeout,
           delay: datetime && (datetime.to_time.to_i - DateTime.now.to_time.to_i)
         )
-      end
-
-      def disc(options = {})
-        self.queue = options.fetch(:queue, 'default')
       end
     end
   end
