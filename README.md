@@ -108,6 +108,8 @@ for example.
 Both the error handler function and the `disc_start` callback get the data of
 the current job as a Hash, that has the following schema.
 
+|               |                                                       |
+|:-------------:|:------------------------------------------------------|
 | `'class'`     | (String) The Job class.                               |
 | `'arguments'` | (Array) The arguments passed to perform.              |
 | `'queue'`     | (String) The queue from which this job was picked up. |
