@@ -132,3 +132,10 @@ default.
 
 The code is released under an MIT license. See the [LICENSE](./LICENSE) file for
 more information.
+
+## Acknowledgements
+
+* To [@godfoca](https://github.com/godfoca) for helping me ship a quality thing and putting up with my constant whining.
+* To [@antirez](https://github,com/antirez) for Redis, Disque, and his refreshing way of programming wonderful tools.
+* To [@soveran](https://github.com/soveran) for pushing me to work on this and publishing gems that keep me enjoying ruby.
+* To [all contributors](https://github.com/pote/disc/graphs/contributors)
