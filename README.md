@@ -32,7 +32,7 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
 3. Enqueue them to perform them asynchronously
 
   ```ruby
-  CreateGameGrid.enqueue('ligth_cycle')
+  CreateGameGrid.enqueue('light_cycle')
   ```
 
 4. Or enqueue them to be performed at some time in the future.
