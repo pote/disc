@@ -127,22 +127,18 @@ class Disc
       end
 
       def enqueue(*args)
+        enqueue_at(nil, args)
+      end
+
+      def enqueue_at(datetime, *args)
         disque.push(
           queue,
           {
             class: self.new.class.name,
             arguments: args
           }.to_msgpack,
-          Disc.disque_timeout
-        )
-      end
-
-      def enqueue_at(datetime, *args)
-        disque.push(
-          queue,
-          args.to_msgpack,
           Disc.disque_timeout,
-          delay: datetime && (datetime.to_time.to_i - DateTime.now.to_time.to_i)
+          delay: datetime.nil? ? nil : (datetime.to_time.to_i - DateTime.now.to_time.to_i)
         )
       end
     end
