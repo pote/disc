@@ -141,6 +141,7 @@ gem 'disc'
 # config/application.rb
 module YourApp
   class Application < Rails::Application
+    require 'active_job/queue_adapters/disc_adapter'
     config.active_job.queue_adapter = :disc
   end
 end
