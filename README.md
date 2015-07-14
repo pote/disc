@@ -118,7 +118,7 @@ the current job as a Hash, that has the following schema.
 ## PowerUps
 
 Disc workers can run just fine on their own, but if you're using
-[Celluloid](https://github.com/celluloid/celluloid) you migth want Disc to take
+[Celluloid](https://github.com/celluloid/celluloid) you might want Disc to take
 advantage of it and spawn multiple worker threads per process, doing this is
 trivial! Just require Celluloid before your init file:
 
