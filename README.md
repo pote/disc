@@ -130,6 +130,37 @@ Whenever Disc detects that Celluloid is available it will use it to  spawn a
 number of threads equal to the `DISC_CONCURRENCY` environment variable, or 25 by
 default.
 
+## Rails and ActiveJob integration
+
+Disc has an [ActiveJob](http://edgeguides.rubyonrails.org/active_job_basics.html) adapter, which you can use very easily:
+
+```ruby
+# Gemfile
+gem 'disc'
+
+# config/application.rb
+module YourApp
+  class Application < Rails::Application
+    config.active_job.queue_adapter = :disc
+  end
+end
+
+# app/jobs/clu_job.rb
+
+class CluJob < ActiveJob::Base
+  queue_as :urgent
+
+  def perform(*args)
+    # Try to take over The Grid here...
+  end
+end
+
+# Wherever you want
+CluJob.perform_later(a_bunch_of_arguments)
+```
+
+As always, make sure your `disc_init.rb` file requires the necessary jobs and you'll be good to go!
+
 ## License
 
 The code is released under an MIT license. See the [LICENSE](./LICENSE) file for
