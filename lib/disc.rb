@@ -68,10 +68,9 @@ class Disc
       loop do
         jobs = disque.fetch(from: queues, timeout: timeout, count: count)
         Array(jobs).each do |queue, msgid, serialized_job|
-          job = MessagePack.unpack(serialized_job)
-          job.update('id' => msgid, 'queue' => queue)
-
           begin
+            job = MessagePack.unpack(serialized_job)
+            job.update('id' => msgid, 'queue' => queue)
             instance = Object.const_get(job['class']).new
             instance.disc_start(job)
             instance.perform(*job['arguments'])
