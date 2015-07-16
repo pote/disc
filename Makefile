@@ -1,5 +1,5 @@
-ifndef GS_NAME
-  $(error GS_NAME not set. Have you `gs in` yet?)
+ifndef GEM_HOME
+  $(error GEM_HOME not set.)
 endif
 
 PACKAGES := disc
