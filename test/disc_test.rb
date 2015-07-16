@@ -2,16 +2,7 @@ require 'cutest'
 require 'disc'
 require 'msgpack'
 
-class TestJob
-  include Disc::Job
-  disc queue: 'test_urgent'
-
-  def perform(first, second, third)
-    puts "First: #{ first }"
-    puts "Second: #{ second }"
-    puts "Third: #{ third }"
-  end
-end
+require_relative '../examples/echoer'
 
 prepare do
   Disc.disque.call('DEBUG', 'FLUSHALL')
@@ -19,7 +10,7 @@ end
 
 scope do
   test 'jobs are enqueued to the correct Disque queue with appropriate parameters and class' do
-    jobid = TestJob.enqueue('one argument', { random: 'data' }, 3)
+    jobid = Echoer.enqueue('one argument', { random: 'data' }, 3)
 
     jobs = Array(Disc.disque.fetch(from: ['test_urgent'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.any?
@@ -31,7 +22,7 @@ scope do
       assert job.has_key?('class')
       assert job.has_key?('arguments')
 
-      assert_equal 'TestJob', job['class']
+      assert_equal 'Echoer', job['class']
       assert_equal jobid, id
 
       args = job['arguments']
@@ -44,7 +35,7 @@ scope do
 
   test 'enqueue_at behaves properly' do
     in_3_seconds = (Time.now + 3).to_datetime
-    jobid = TestJob.enqueue_at(in_3_seconds, 'one argument', { random: 'data' }, 3)
+    jobid = Echoer.enqueue_at(in_3_seconds, 'one argument', { random: 'data' }, 3)
 
     jobs = Array(Disc.disque.fetch(from: ['test_urgent'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.empty?
@@ -64,9 +55,27 @@ scope do
       job = MessagePack.unpack(serialized_job)
       assert job.has_key?('class')
       assert job.has_key?('arguments')
-      assert_equal 'TestJob', job['class']
-
+      assert_equal 'Echoer', job['class']
       assert_equal 3, job['arguments'].size
+    end
+  end
+
+  test 'jobs are executed' do
+    begin
+      Echoer.enqueue('one argument', { random: 'data' }, 3)
+
+      r_output, w_output = IO.pipe
+      pid = spawn("QUEUES=test_urgent ./bin/disc -r ./examples/echoer", out: w_output)
+
+      sleep 0.2
+      w_output.close
+      Process.kill("KILL", pid)
+
+      output = r_output.read
+
+
+    ensure
+      Process.kill("KILL", pid)
     end
   end
 end

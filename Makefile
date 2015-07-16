@@ -14,13 +14,13 @@ export RUBYLIB := lib:test:$(RUBYLIB)
 all: test $(GEMS)
 
 console: $(DEPS)
-	irb -r disc
+	@irb -r disc
 
 test: $(DEPS)
-	cutest ./test/**/*_test.rb
+	@cutest ./test/**/*_test.rb
 
 clean:
-	rm pkg/*.gem
+	@rm pkg/*.gem
 
 release: $(GEMS)
 	git tag v$(VERSION)

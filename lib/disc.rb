@@ -29,7 +29,7 @@ class Disc
   end
 
   def self.on_error(exception, job)
-    STDERR.puts exception
+    $stderr.puts exception
   end
 
   class Worker
@@ -64,7 +64,7 @@ class Disc
     end
 
     def run
-      STDOUT.puts("Disc::Worker listening in #{queues}")
+      $stdout.puts("Disc::Worker listening in #{queues}")
       loop do
         jobs = disque.fetch(from: queues, timeout: timeout, count: count)
         Array(jobs).each do |queue, msgid, serialized_job|
@@ -120,7 +120,7 @@ class Disc
         disque.push(
           queue,
           {
-            class: self.new.class.name,
+            class: self.name,
             arguments: args
           }.to_msgpack,
           Disc.disque_timeout,
