@@ -1,4 +1,3 @@
-$: << 'lib'
 require 'cutest'
 require 'disc'
 require 'msgpack'
