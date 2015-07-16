@@ -1,22 +1,44 @@
 $: << 'lib'
 require 'cutest'
 require 'disc'
+require 'msgpack'
 
 class TestJob
   include Disc::Job
   disc queue: 'test_urgent'
 
-  def perform(argument)
-    puts argument
+  def perform(first, second, third)
+    puts "First: #{ first }"
+    puts "Second: #{ second }"
+    puts "Third: #{ third }"
   end
 end
 
+prepare do
+  Disc.disque.call('DEBUG', 'FLUSHALL')
+end
+
 scope do
-  test 'basic enqueuing works' do
-    original_length = Disc.disque.call('QLEN', 'test_urgent').to_i
+  test 'jobs are enqueued to the correct Disque queue with appropriate parameters and class' do
+    TestJob.enqueue('one argument', { random: 'data' }, 3)
 
-    TestJob.enqueue(random: 'data')
+    jobs = Array(Disc.disque.fetch(from: ['test_urgent'], timeout: Disc.disque_timeout, count: 1))
+    assert jobs.any?
+    assert_equal 1, jobs.count
 
-    assert Disc.disque.call('QLEN', 'test_urgent').to_i == original_length + 1
+    jobs.first.tap do |queue, _, serialized_job|
+      job = MessagePack.unpack(serialized_job)
+
+      assert job.has_key?('class')
+      assert job.has_key?('arguments')
+
+      assert_equal 'TestJob', job['class']
+
+      args = job['arguments']
+      assert_equal 3, args.size
+      assert_equal 'one argument', args[0]
+      assert_equal({ 'random' => 'data' }, args[1])
+      assert_equal(3, args[2])
+    end
   end
 end

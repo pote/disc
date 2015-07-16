@@ -134,7 +134,7 @@ class Disc
           queue,
           {
             class: self.new.class.name,
-            arguments: args
+            arguments: args.first
           }.to_msgpack,
           Disc.disque_timeout,
           delay: datetime.nil? ? nil : (datetime.to_time.to_i - DateTime.now.to_time.to_i)

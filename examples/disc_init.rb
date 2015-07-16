@@ -1,1 +1,2 @@
-Dir.glob("./**/*.rb") { |f| require f }
+$:.unshift('lib')
+Dir.glob("./examples/**/*.rb") { |f| require f }
