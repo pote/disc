@@ -72,17 +72,10 @@ class Disc
             job = MessagePack.unpack(serialized_job)
             job.update('id' => msgid, 'queue' => queue)
             instance = Object.const_get(job['class']).new
-            instance.disc_start(job)
             instance.perform(*job['arguments'])
             disque.call('ACKJOB', msgid)
           rescue => err
             Disc.on_error(err, job)
-          ensure
-            begin
-              instance.disc_done(err)
-            rescue => boom
-              Disc.on_error(boom, job)
-            end
           end
         end
       end
@@ -96,12 +89,6 @@ class Disc
 
     def self.included(base)
       base.extend(ClassMethods)
-    end
-
-    def disc_start(job)
-    end
-
-    def disc_done(error = nil)
     end
 
     module ClassMethods
