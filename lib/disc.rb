@@ -12,7 +12,7 @@ class Disc
     @disque ||= Disque.new(
       ENV.fetch('DISQUE_NODES', 'localhost:7711'),
       auth: ENV.fetch('DISQUE_AUTH', nil),
-      cycle: ENV.fetch('DISQUE_CYCLE', '1000').to_i
+      cycle: Integer(ENV.fetch('DISQUE_CYCLE', '1000'))
     )
   end
 
@@ -43,23 +43,25 @@ class Disc
     end
 
     def initialize(options = {})
-      @disque = options[:disque] || Disc.disque
-      @count = (options[:count] || ENV.fetch('DISQUE_COUNT', '1')).to_i
-      @timeout = (options[:timeout] || ENV.fetch('DISQUE_TIMEOUT', '2000')).to_i
-
-      @queues = case
-                when options[:queues].is_a?(Array)
-                  options[:queues]
-                when options[:queues].is_a?(String)
-                  options[:queues].split(',')
-                when options[:queues].nil?
-                  ENV.fetch('QUEUES', 'default').split(',')
-                else
-                  raise 'Invalid Disque Queues'
-                end
+      @disque = options.fetch(:disque, Disc.disque)
+      @queues = options.fetch(
+        :queues,
+        ENV.fetch('QUEUES', 'default')
+      )
+      @count = Integer(
+        options.fetch(
+          :count,
+          ENV.fetch('DISQUE_COUNT', '1')
+        )
+      )
+      @timeout = Integer(
+        options.fetch(
+          :timeout,
+          ENV.fetch('DISQUE_TIMEOUT', '2000')
+        )
+      )
 
       self.run if options[:run]
-
       self
     end
 
