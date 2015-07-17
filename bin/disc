@@ -7,7 +7,7 @@ Clap.run ARGV,
   "-r" => lambda { |file| require file }
 
 if defined?(Celluloid)
-  concurrency = ENV.fetch('DISC_CONCURRENCY', '25').to_i
+  concurrency = Integer(ENV.fetch('DISC_CONCURRENCY', '25'))
   $stdout.puts(
     "[Notice] Disc running in celluloid mode! Current DISC_CONCURRENCY is\
  #{ concurrency }."
@@ -19,7 +19,7 @@ if defined?(Celluloid)
     # Deprecated as of Celluloid 0.17, but still supported via "backported mode"
     class Disc::WorkerGroup < Celluloid::SupervisionGroup
       pool Disc::Worker,
-            size: ENV.fetch('DISC_CONCURRENCY', '25').to_i,
+            size: concurrency,
             as: :worker_pool,
             args: [{ run: true }]
     end
