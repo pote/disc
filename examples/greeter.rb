@@ -6,5 +6,6 @@ class Greeter
 
   def perform(string)
     `say #{string}`
+    $stdout.puts(string)
   end
 end
