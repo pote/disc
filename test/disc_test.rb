@@ -64,16 +64,23 @@ scope do
     begin
       Echoer.enqueue('one argument', { random: 'data' }, 3)
 
-      r_output, w_output = IO.pipe
-      pid = spawn("QUEUES=test_urgent ./bin/disc -r ./examples/echoer", out: w_output)
+      read_pipe, write_pipe = IO.pipe
+      pid = spawn(
+        'QUEUES=test_urgent ruby -Ilib bin/disc -r ./examples/echoer',
+        out: write_pipe,
+        err: write_pipe
+      )
 
       sleep 0.2
-      w_output.close
-      Process.kill("KILL", pid)
+      write_pipe.close
+      Process.kill("KILL", pid) # This is ugly, but we need to kill the process
+                                # before we're able to read from the pipe, otherwise
+                                # it just blocks until the process is done (never).
 
-      output = r_output.read
+      output = read_pipe.read
+      read_pipe.close
 
-
+      assert output.match(/First: one argument, Second: {"random"=>"data"}, Third: 3/)
     ensure
       Process.kill("KILL", pid)
     end
