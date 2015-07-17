@@ -8,7 +8,7 @@ Clap.run ARGV,
 
 if defined?(Celluloid)
   concurrency = ENV.fetch('DISC_CONCURRENCY', '25').to_i
-  STDOUT.puts(
+  $stdout.puts(
     "[Notice] Disc running in celluloid mode! Current DISC_CONCURRENCY is\
  #{ concurrency }."
   )
@@ -32,6 +32,6 @@ if defined?(Celluloid)
     )
   end
 else
-  STDOUT.puts("[Notice] Disc running in non-threaded mode")
+  $stdout.puts("[Notice] Disc running in non-threaded mode")
   Disc::Worker.run
 end

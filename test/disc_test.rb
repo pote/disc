@@ -65,7 +65,7 @@ scope do
       Echoer.enqueue('one argument', { random: 'data' }, 3)
 
       read_pipe, write_pipe = IO.pipe
-      pid = spawn(
+      pid = Process.spawn(
         'QUEUES=test_urgent ruby -Ilib bin/disc -r ./examples/echoer',
         out: write_pipe,
         err: write_pipe
@@ -77,9 +77,12 @@ scope do
                                 # before we're able to read from the pipe, otherwise
                                 # it just blocks until the process is done (never).
 
+
+      jobs = Disc.disque.fetch(from: ['test_urgent'], timeout: Disc.disque_timeout, count: 1)
+      assert jobs.nil?
+
       output = read_pipe.read
       read_pipe.close
-
       assert output.match(/First: one argument, Second: {"random"=>"data"}, Third: 3/)
     ensure
       Process.kill("KILL", pid)
