@@ -1,6 +1,7 @@
 require 'cutest'
 require 'disc'
 require 'msgpack'
+require 'pty'
 
 require_relative '../examples/echoer'
 
@@ -64,26 +65,23 @@ scope do
     begin
       Echoer.enqueue('one argument', { random: 'data' }, 3)
 
-      read_pipe, write_pipe = IO.pipe
-      pid = Process.spawn(
-        'QUEUES=test_urgent ruby -Ilib bin/disc -r ./examples/echoer',
-        out: write_pipe,
-        err: write_pipe
+      cout, _, pid = PTY.spawn(
+        'QUEUES=test_urgent ruby -Ilib bin/disc -r ./examples/echoer'
       )
-
-      sleep 0.2
-      write_pipe.close
-      Process.kill("KILL", pid) # This is ugly, but we need to kill the process
-                                # before we're able to read from the pipe, otherwise
-                                # it just blocks until the process is done (never).
-
+      sleep 0.5
 
       jobs = Disc.disque.fetch(from: ['test_urgent'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
 
-      output = read_pipe.read
-      read_pipe.close
-      assert output.match(/First: one argument, Second: {"random"=>"data"}, Third: 3/)
+      matched = false
+      counter = 0
+      while !matched && counter < 5
+        counter += 1
+        matched = cout.gets.match(/First: one argument, Second: {"random"=>"data"}, Third: 3/)
+        sleep(1) unless matched
+      end
+
+      assert matched
     ensure
       Process.kill("KILL", pid)
     end
