@@ -141,6 +141,11 @@ CluJob.perform_later(a_bunch_of_arguments)
 
 As always, make sure your `disc_init.rb` file requires the necessary jobs and you'll be good to go!
 
+
+## A note on stability.
+
+The version of Disque at the time of this writing is `0.0.1`. It is a wonderful project, I know of people running it in production, and I expect it will only get better and better with time, but please do not expect Disc to be more production ready than Disque is, Disque still gives me the occasional segfault when running Disc's test suite.
+
 ## License
 
 The code is released under an MIT license. See the [LICENSE](./LICENSE) file for
