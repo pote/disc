@@ -111,7 +111,7 @@ default.
 
 ## Rails and ActiveJob integration
 
-Disc has an [ActiveJob](http://edgeguides.rubyonrails.org/active_job_basics.html) adapter, which you can use very easily:
+You can use Disc easily in Rails without any more hassle, but if you'd like to use it via [ActiveJob](http://edgeguides.rubyonrails.org/active_job_basics.html) you can use the adapter included in this gem.
 
 ```ruby
 # Gemfile
