@@ -99,10 +99,9 @@ scope do
 
       matched = false
       counter = 0
-      while !matched && counter < 5
+      while !matched && counter < 3
         counter += 1
         matched = cout.gets.match(/First: one argument, Second: {"random"=>"data"}, Third: 3/)
-        sleep(1) unless matched
       end
 
       assert matched
@@ -130,7 +129,7 @@ scope do
         printed_job: false
       }
 
-      while tasks.values.include?(false) && counter < 10
+      while tasks.values.include?(false) && counter < 5
         counter += 1
         output = cout.gets
 
