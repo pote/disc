@@ -72,12 +72,11 @@ class Disc
         Array(jobs).each do |queue, msgid, serialized_job|
           begin
             job = MessagePack.unpack(serialized_job)
-            job.update('id' => msgid, 'queue' => queue)
             instance = Object.const_get(job['class']).new
             instance.perform(*job['arguments'])
             disque.call('ACKJOB', msgid)
           rescue => err
-            Disc.on_error(err, job)
+            Disc.on_error(err, job.update('id' => msgid, 'queue' => queue))
           end
         end
       end
