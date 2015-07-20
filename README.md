@@ -35,10 +35,10 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
   CreateGameGrid.enqueue('light_cycle')
   ```
 
-4. Or enqueue them to be performed at some time in the future.
+4. Or enqueue them to be performed at some time in the future, or on a queue other than it's default.
 
   ```ruby
-  CreateGameGrid.enqueue_at(DateTime.new(2015, 12, 31), 'disc_arena')
+  CreateGameGrid.enqueue('disc_arena', at: DateTime.new(2015, 12, 31), queue: 'not_so_important')
   ```
 
 5. Create a file that requires anything needed for your jobs to run
@@ -49,7 +49,7 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
   Dir['./jobs/**/*.rb'].each { |job| require job }
   ```
 
-7. Run as many Disc Worker processes as you wish.
+6. Run as many Disc Worker processes as you wish, requiring your `disc_init.rb` file
 
   ```bash
   $ QUEUES=urgent,default disc -r ./disc_init.rb
