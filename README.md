@@ -161,3 +161,9 @@ more information.
 * To [@antirez](https://github,com/antirez) for Redis, Disque, and his refreshing way of programming wonderful tools.
 * To [@soveran](https://github.com/soveran) for pushing me to work on this and publishing gems that keep me enjoying ruby.
 * To [all contributors](https://github.com/pote/disc/graphs/contributors)
+
+## Sponsorship
+
+This open source tool is proudly sponsored by [13Floor](http://13Floor.org)
+
+![13Floor](./13Floor-circulo-1.png)
