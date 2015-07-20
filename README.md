@@ -98,9 +98,9 @@ The error handler function gets the data of the current job as a Hash, that has 
 | `'queue'`     | (String) The queue from which this job was picked up. |
 | `'id'`        | (String) Disque's job ID.                             |
 
-## PowerUps
+## Celluloid PowerUps
 
-Disc workers can run just fine on their own, but if you're using
+Disc workers can run just fine on their own, but if you happen to be using
 [Celluloid](https://github.com/celluloid/celluloid) you might want Disc to take
 advantage of it and spawn multiple worker threads per process, doing this is
 trivial! Just require Celluloid before your init file:
