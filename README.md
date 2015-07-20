@@ -38,7 +38,11 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
 4. Or enqueue them to be performed at some time in the future, or on a queue other than it's default.
 
   ```ruby
-  CreateGameGrid.enqueue('disc_arena', at: DateTime.new(2015, 12, 31), queue: 'not_so_important')
+  CreateGameGrid.enqueue(
+    'disc_arena',
+    at: DateTime.new(2015, 12, 31),
+    queue: 'not_so_important'
+  )
   ```
 
 5. Create a file that requires anything needed for your jobs to run
