@@ -35,7 +35,7 @@ end
 
 scope do
   test 'jobs are enqueued to the correct Disque queue with appropriate parameters and class' do
-    jobid = Echoer.enqueue('one argument', { random: 'data' }, 3)
+    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.any?
@@ -58,9 +58,8 @@ scope do
     end
   end
 
-  test 'enqueue_at behaves properly' do
-    in_3_seconds = (Time.now + 3).to_datetime
-    jobid = Echoer.enqueue_at(in_3_seconds, 'one argument', { random: 'data' }, 3)
+  test 'enqueue at timestamp behaves properly' do
+    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], at: Time.now + 3)
 
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.empty?
@@ -87,7 +86,7 @@ scope do
 
   test 'jobs are executed' do
     begin
-      Echoer.enqueue('one argument', { random: 'data' }, 3)
+      Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
       cout, _, pid = PTY.spawn(
         'QUEUES=test ruby -Ilib bin/disc -r ./examples/echoer'

@@ -113,19 +113,15 @@ class Disc
         disc_options.fetch(:queue, 'default')
       end
 
-      def enqueue(*args)
-        enqueue_at(nil, *args)
-      end
-
-      def enqueue_at(datetime, *args)
+      def enqueue(args, at: nil, queue: nil)
         disque.push(
-          queue,
+          queue || self.queue,
           {
             class: self.name,
-            arguments: args
+            arguments: Array(args)
           }.to_msgpack,
           Disc.disque_timeout,
-          delay: datetime.nil? ? nil : (datetime.to_time.to_i - DateTime.now.to_time.to_i)
+          delay: at.nil? ? nil : (at.to_time.to_i - DateTime.now.to_time.to_i)
         )
       end
     end
