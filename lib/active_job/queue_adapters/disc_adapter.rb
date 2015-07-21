@@ -4,11 +4,11 @@ require 'msgpack'
 module ActiveJob
   module QueueAdapters
     class DiscAdapter
-      def enqueue(job)
+      def self.enqueue(job)
         enqueue_at(job, nil)
       end
 
-      def enqueue_at(job, timestamp)
+      def self.enqueue_at(job, timestamp)
         Disc.disque.push(
           job.queue_name,
           {
