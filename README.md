@@ -58,6 +58,29 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
   ```bash
   $ QUEUES=urgent,default disc -r ./disc_init.rb
   ```
+  
+## Notes about Jobs
+
+Jobs are fairly straighforward Ruby classes, internally Disc serializes them to MessagePack so they can be stored in Disque, this has a few implications:
+
+* Don't enqueue complex objects! Instead of `user`, enqueue `user.id`!
+* If your job takes multiple arguments, you'll want to pass all those arguments in the first parameter of `#enqueue` as an array.
+
+Example:
+
+```ruby
+class ComplexJob
+  include Disc::Job
+  disc queue: 'urgent'
+  
+  def perform(first_argument, second_argument)
+    # do things...
+  end
+end
+
+
+ComplexJob.enqueue(['first parameter', { second: 'parameter' }]
+```
 
 ## Settings
 
