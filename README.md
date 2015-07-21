@@ -73,13 +73,13 @@ class ComplexJob
   include Disc::Job
   disc queue: 'urgent'
   
-  def perform(first_argument, second_argument)
+  def perform(first_parameter, second_parameter)
     # do things...
   end
 end
 
 
-ComplexJob.enqueue(['first parameter', { second: 'parameter' }]
+ComplexJob.enqueue(['first argument', { second: 'argument' }]
 ```
 
 ## Settings
