@@ -156,6 +156,10 @@ $ QUEUES=urgent disc -r ./disc_init.rb
 
 The version of Disque at the time of this writing is `0.0.1`. It is a wonderful project, I know of people running it in production and I expect it will only get better and better with time, but please do not expect Disc to be more production ready than Disque is.
 
+## Similar Projects
+
+If you want to use Disque but Disc isn't cutting it for you then you should take a look at [Havanna](https://github.com/djanowski/havanna), a project by my friend [@djanowski](https://twitter.com/djanowski).
+
 ## License
 
 The code is released under an MIT license. See the [LICENSE](./LICENSE) file for
