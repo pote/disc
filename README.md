@@ -100,7 +100,7 @@ The error handler function gets the data of the current job as a Hash, that has 
 
 ## [Optional] Celluloid integration
 
-Disc workers can run just fine on their own, but if you happen to be using
+Disc workers run just fine on their own, but if you happen to be using
 [Celluloid](https://github.com/celluloid/celluloid) you might want Disc to take
 advantage of it and spawn multiple worker threads per process, doing this is
 trivial! Just require Celluloid before your init file:
@@ -113,7 +113,7 @@ Whenever Disc detects that Celluloid is available it will use it to  spawn a
 number of threads equal to the `DISC_CONCURRENCY` environment variable, or 25 by
 default.
 
-## Rails and ActiveJob integration
+## [Optional] Rails and ActiveJob integration
 
 You can use Disc easily in Rails without any more hassle, but if you'd like to use it via [ActiveJob](http://edgeguides.rubyonrails.org/active_job_basics.html) you can use the adapter included in this gem.
 
