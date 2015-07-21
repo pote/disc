@@ -139,12 +139,18 @@ class CluJob < ActiveJob::Base
   end
 end
 
+# disc_init.rb
+require ::File.expand_path('../config/environment', __FILE__)
+
 # Wherever you want
 CluJob.perform_later(a_bunch_of_arguments)
 ```
 
-As always, make sure your `disc_init.rb` file requires the necessary jobs and you'll be good to go!
+Disc is run in the exact same way, for this example it'd be:
 
+```bash
+$ QUEUES=urgent disc -r ./disc_init.rb
+```
 
 ## A note on stability
 
