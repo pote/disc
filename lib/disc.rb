@@ -113,7 +113,7 @@ class Disc
         disc_options.fetch(:queue, 'default')
       end
 
-      def enqueue(args, at: nil, queue: nil)
+      def enqueue(args = [], at: nil, queue: nil)
         disque.push(
           queue || self.queue,
           {
