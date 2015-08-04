@@ -79,7 +79,7 @@ class ComplexJob
 end
 
 
-ComplexJob.enqueue(['first argument', { second: 'argument' }]
+ComplexJob.enqueue(['first argument', { second: 'argument' }])
 ```
 
 ## Settings
