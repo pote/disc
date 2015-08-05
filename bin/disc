@@ -7,10 +7,9 @@ Clap.run ARGV,
   "-r" => lambda { |file| require file }
 
 if defined?(Celluloid)
-  concurrency = Integer(ENV.fetch('DISC_CONCURRENCY', '25'))
   $stdout.puts(
     "[Notice] Disc running in celluloid mode! Current DISC_CONCURRENCY is\
- #{ concurrency }."
+ #{ Integer(ENV.fetch('DISC_CONCURRENCY', '25')) }."
   )
 
   Disc::Worker.send(:include, Celluloid)
@@ -19,7 +18,7 @@ if defined?(Celluloid)
     # Deprecated as of Celluloid 0.17, but still supported via "backported mode"
     class Disc::WorkerGroup < Celluloid::SupervisionGroup
       pool Disc::Worker,
-            size: concurrency,
+            size: Integer(ENV.fetch('DISC_CONCURRENCY', '25')),
             as: :worker_pool,
             args: [{ run: true }]
     end
@@ -27,7 +26,7 @@ if defined?(Celluloid)
     Disc::WorkerGroup.run
   else
     Disc::Worker.pool(
-      size: concurrency,
+      size: Integer(ENV.fetch('DISC_CONCURRENCY', '25')),
       args: [{ run: true }]
     )
   end
@@ -35,3 +34,4 @@ else
   $stdout.puts("[Notice] Disc running in non-threaded mode")
   Disc::Worker.run
 end
+
