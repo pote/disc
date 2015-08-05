@@ -47,7 +47,7 @@ class Disc
       @queues = options.fetch(
         :queues,
         ENV.fetch('QUEUES', 'default')
-      )
+      ).split(',')
       @count = Integer(
         options.fetch(
           :count,

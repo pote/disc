@@ -89,7 +89,7 @@ scope do
       Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
       cout, _, pid = PTY.spawn(
-        'QUEUES=test ruby -Ilib bin/disc -r ./examples/echoer'
+        'QUEUES=test,default ruby -Ilib bin/disc -r ./examples/echoer'
       )
       sleep 0.5
 
