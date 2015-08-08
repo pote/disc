@@ -34,6 +34,24 @@ prepare do
 end
 
 scope do
+  # Runs a given command, yielding the stdout (as an IO) and the PID (a String).
+  # Makes sure the process finishes after the block runs.
+  def run(command)
+    out, _, pid = PTY.spawn(command)
+    yield out, pid
+  ensure
+    Process.kill("KILL", pid)
+    sleep 0.1 # Make sure we give it time to finish.
+  end
+
+  # Checks whether a process is running.
+  def is_running?(pid)
+    Process.getpgid(pid)
+    true
+  rescue Errno::ESRCH
+    false
+  end
+
   test 'jobs are enqueued to the correct Disque queue with appropriate parameters and class' do
     jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
@@ -85,12 +103,9 @@ scope do
   end
 
   test 'jobs are executed' do
-    begin
-      Echoer.enqueue(['one argument', { random: 'data' }, 3])
+    Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
-      cout, _, pid = PTY.spawn(
-        'QUEUES=test,default ruby -Ilib bin/disc -r ./examples/echoer'
-      )
+    run('QUEUES=test ruby -Ilib bin/disc -r ./examples/echoer') do |cout, pid|
       sleep 0.5
 
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
@@ -98,18 +113,13 @@ scope do
 
       output = cout.take(3)
       assert output.grep(/First: one argument, Second: {"random"=>"data"}, Third: 3/).any?
-    ensure
-      Process.kill("KILL", pid)
     end
   end
 
   test 'Disc.on_error will catch unhandled exceptions and keep disc alive' do
-    begin
-      Failer.enqueue('this can only end positively')
+    Failer.enqueue('this can only end positively')
 
-      cout, _, pid = PTY.spawn(
-        'QUEUES=test ruby -Ilib bin/disc -r ./examples/failer'
-      )
+    run('QUEUES=test ruby -Ilib bin/disc -r ./examples/failer') do |cout, pid|
       sleep 0.5
 
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
@@ -120,14 +130,7 @@ scope do
       assert output.grep(/this can only end positively/).any?
       assert output.grep(/Failer/).any?
 
-      begin
-        Process.getpgid(pid)
-        assert true
-      rescue Errno::ESRCH
-        assert false
-      end
-    ensure
-      Process.kill("KILL", pid)
+      assert is_running?(pid)
     end
   end
 end
