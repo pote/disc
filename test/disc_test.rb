@@ -30,6 +30,7 @@ require_relative '../examples/failer'
 # end
 
 prepare do
+  Disc.disque_timeout = 1 # 1ms so we don't wait at all.
   Disc.disque.call('DEBUG', 'FLUSHALL')
 end
 
@@ -77,16 +78,16 @@ scope do
   end
 
   test 'enqueue at timestamp behaves properly' do
-    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], at: Time.now + 3)
+    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], at: Time.now + 1)
 
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.empty?
 
-    sleep 1
+    sleep 0.5
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.empty?
 
-    sleep 2
+    sleep 0.5
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.any?
     assert_equal 1, jobs.size
@@ -106,12 +107,11 @@ scope do
     Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
     run('QUEUES=test ruby -Ilib bin/disc -r ./examples/echoer') do |cout, pid|
-      sleep 0.5
+      output = cout.take(3)
 
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
 
-      output = cout.take(3)
       assert output.grep(/First: one argument, Second: {"random"=>"data"}, Third: 3/).any?
     end
   end
@@ -120,12 +120,11 @@ scope do
     Failer.enqueue('this can only end positively')
 
     run('QUEUES=test ruby -Ilib bin/disc -r ./examples/failer') do |cout, pid|
-      sleep 0.5
+      output = cout.take(5)
 
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
 
-      output = cout.take(5)
       assert output.grep(/<insert error reporting here>/).any?
       assert output.grep(/this can only end positively/).any?
       assert output.grep(/Failer/).any?
