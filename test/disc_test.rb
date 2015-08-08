@@ -96,14 +96,8 @@ scope do
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
 
-      matched = false
-      counter = 0
-      while !matched && counter < 3
-        counter += 1
-        matched = cout.gets.match(/First: one argument, Second: {"random"=>"data"}, Third: 3/)
-      end
-
-      assert matched
+      output = cout.take(3)
+      assert output.grep(/First: one argument, Second: {"random"=>"data"}, Third: 3/).any?
     ensure
       Process.kill("KILL", pid)
     end
@@ -121,23 +115,10 @@ scope do
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
 
-      counter = 0
-      tasks = {
-        reported_error: false,
-        printed_message: false,
-        printed_job: false
-      }
-
-      while tasks.values.include?(false) && counter < 5
-        counter += 1
-        output = cout.gets
-
-        tasks[:reported_error] = true   if output.match(/<insert error reporting here>/)
-        tasks[:printed_message] = true  if output.match(/this can only end positively/)
-        tasks[:printed_job] = true      if output.match(/Failer/)
-      end
-
-      assert !tasks.values.include?(false)
+      output = cout.take(5)
+      assert output.grep(/<insert error reporting here>/).any?
+      assert output.grep(/this can only end positively/).any?
+      assert output.grep(/Failer/).any?
 
       begin
         Process.getpgid(pid)
