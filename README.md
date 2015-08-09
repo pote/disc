@@ -191,7 +191,7 @@ more information.
 ## Acknowledgements
 
 * To [@foca](https://github.com/foca) for helping me ship a quality thing and putting up with my constant whining.
-* To [@antirez](https://github,com/antirez) for Redis, Disque, and his refreshing way of programming wonderful tools.
+* To [@antirez](https://github.com/antirez) for Redis, Disque, and his refreshing way of programming wonderful tools.
 * To [@soveran](https://github.com/soveran) for pushing me to work on this and publishing gems that keep me enjoying ruby.
 * To [all contributors](https://github.com/pote/disc/graphs/contributors)
 
