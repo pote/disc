@@ -92,10 +92,6 @@ class Disc
   end
 
   module Job
-    attr_reader :arguments,
-                :disque,
-                :disc_options
-
     def self.included(base)
       base.extend(ClassMethods)
     end
