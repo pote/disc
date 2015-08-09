@@ -21,7 +21,7 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
 
   class CreateGameGrid
     include Disc::Job
-    disc queue: 'urgent'
+    self.queue = 'urgent'
 
     def perform(type)
       # perform rather lengthy operations here.
@@ -71,7 +71,7 @@ Example:
 ```ruby
 class ComplexJob
   include Disc::Job
-  disc queue: 'urgent'
+  self.queue = 'urgent'
   
   def perform(first_parameter, second_parameter)
     # do things...

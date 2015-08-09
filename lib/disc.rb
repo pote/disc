@@ -97,39 +97,41 @@ class Disc
     end
 
     module ClassMethods
-      def disque
-        defined?(@disque) ? @disque : Disc.disque
-      end
-
-      def disque=(disque)
-        @disque = disque
-      end
-
-      def disc(queue: nil, **options)
-        @queue = queue
-        @disc_options = options
-      end
-
-      def disc_options
-        @disc_options ||= {}
-      end
-
       def queue
-        @queue || Disc.default_queue
+        @queue ||= Disc.default_queue
+      end
+      attr_writer :queue
+
+      def disque
+        @disque ||= Disc.disque
+      end
+      attr_writer :disque
+
+      def disque_timeout
+        @disque_timeout ||= Disc.disque_timeout
+      end
+      attr_writer :disque_timeout
+
+      def disque_options
+        @disque_options ||= {}
+      end
+      attr_writer :disque_options
+
+      def disc(options = {})
+        warn "[DEPRECATED] `disc_options(queue: 'foo')` is deprecated. Use `self.queue = 'foo'."
+        self.queue = options.fetch(:queue, self.queue)
       end
 
-      def enqueue(args = [], at: nil, queue: nil, **options)
-        options = disc_options.merge(options).tap do |opt|
-          opt[:delay] = at.to_time.to_i - DateTime.now.to_time.to_i unless at.nil?
+      def enqueue(args = [], at: nil, queue: nil, **disque_options)
+        options = self.disque_options.merge(disque_options)
+        unless at.nil?
+          options[:delay] = at.to_time.to_i - DateTime.now.to_time.to_i
         end
 
         disque.push(
           queue || self.queue,
-          {
-            class: self.name,
-            arguments: Array(args)
-          }.to_msgpack,
-          Disc.disque_timeout,
+          { class: self.name, arguments: Array(args) }.to_msgpack,
+          disque_timeout,
           options
         )
       end

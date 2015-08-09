@@ -8,7 +8,7 @@ end
 
 class Failer
   include Disc::Job
-  disc queue: 'test'
+  self.queue = 'test'
 
   def perform(string)
     raise string
