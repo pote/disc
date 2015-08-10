@@ -1,0 +1,21 @@
+language: ruby
+rvm:
+  - 2.2
+sudo: false
+cache:
+  bundler: false
+  directories:
+    - disque
+    - gems
+before_install:
+  - test -d disque/.git || git clone -n https://github.com/antirez/disque.git
+  - cd disque && git fetch origin && git checkout -f master && make && cd ..
+install:
+  - export GEM_HOME=$PWD/gems/$RUBY_VERSION
+  - export GEM_PATH=$GEM_HOME:$GEM_PATH
+  - export PATH=$GEM_HOME/bin:$PWD/disque/src:$PATH
+  - mkdir -p $GEM_HOME
+  - which dep || gem install dep
+  - dep install
+before_script: disque-server --daemonize yes
+script: make test
