@@ -109,10 +109,8 @@ scope do
 
     run('QUEUES=test ruby -Ilib bin/disc -r ./examples/echoer') do |cout, pid|
       output = Timeout.timeout(1) { cout.take(3) }
-
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
-
       assert output.grep(/First: one argument, Second: {"random"=>"data"}, Third: 3/).any?
     end
   end
@@ -122,7 +120,6 @@ scope do
 
     run('QUEUES=test ruby -Ilib bin/disc -r ./examples/failer') do |cout, pid|
       output = Timeout.timeout(1) { cout.take(5) }
-
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
 
