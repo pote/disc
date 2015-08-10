@@ -2,6 +2,7 @@ require 'cutest'
 require 'disc'
 require 'msgpack'
 require 'pty'
+require 'timeout'
 
 require_relative '../examples/echoer'
 # class Echoer
@@ -107,7 +108,7 @@ scope do
     Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
     run('QUEUES=test ruby -Ilib bin/disc -r ./examples/echoer') do |cout, pid|
-      output = cout.take(3)
+      output = Timeout.timeout(1) { cout.take(3) }
 
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
@@ -120,7 +121,7 @@ scope do
     Failer.enqueue('this can only end positively')
 
     run('QUEUES=test ruby -Ilib bin/disc -r ./examples/failer') do |cout, pid|
-      output = cout.take(5)
+      output = Timeout.timeout(1) { cout.take(5) }
 
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
