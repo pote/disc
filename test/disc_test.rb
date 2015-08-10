@@ -2,6 +2,7 @@ require 'cutest'
 require 'disc'
 require 'msgpack'
 require 'pty'
+require 'timeout'
 
 require_relative '../examples/echoer'
 # class Echoer
@@ -30,10 +31,29 @@ require_relative '../examples/failer'
 # end
 
 prepare do
+  Disc.disque_timeout = 1 # 1ms so we don't wait at all.
   Disc.disque.call('DEBUG', 'FLUSHALL')
 end
 
 scope do
+  # Runs a given command, yielding the stdout (as an IO) and the PID (a String).
+  # Makes sure the process finishes after the block runs.
+  def run(command)
+    out, _, pid = PTY.spawn(command)
+    yield out, pid
+  ensure
+    Process.kill("KILL", pid)
+    sleep 0.1 # Make sure we give it time to finish.
+  end
+
+  # Checks whether a process is running.
+  def is_running?(pid)
+    Process.getpgid(pid)
+    true
+  rescue Errno::ESRCH
+    false
+  end
+
   test 'jobs are enqueued to the correct Disque queue with appropriate parameters and class' do
     jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
@@ -59,16 +79,16 @@ scope do
   end
 
   test 'enqueue at timestamp behaves properly' do
-    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], at: Time.now + 3)
+    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], at: Time.now + 1)
 
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.empty?
 
-    sleep 1
+    sleep 0.5
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.empty?
 
-    sleep 2
+    sleep 0.5
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.any?
     assert_equal 1, jobs.size
@@ -85,68 +105,32 @@ scope do
   end
 
   test 'jobs are executed' do
-    begin
-      Echoer.enqueue(['one argument', { random: 'data' }, 3])
+    Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
-      cout, _, pid = PTY.spawn(
-        'QUEUES=test,default ruby -Ilib bin/disc -r ./examples/echoer'
-      )
-      sleep 0.5
+    run('QUEUES=test ruby -Ilib bin/disc -r ./examples/echoer') do |cout, pid|
+      output = Timeout.timeout(1) { cout.take(3) }
 
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
 
-      matched = false
-      counter = 0
-      while !matched && counter < 3
-        counter += 1
-        matched = cout.gets.match(/First: one argument, Second: {"random"=>"data"}, Third: 3/)
-      end
-
-      assert matched
-    ensure
-      Process.kill("KILL", pid)
+      assert output.grep(/First: one argument, Second: {"random"=>"data"}, Third: 3/).any?
     end
   end
 
   test 'Disc.on_error will catch unhandled exceptions and keep disc alive' do
-    begin
-      Failer.enqueue('this can only end positively')
+    Failer.enqueue('this can only end positively')
 
-      cout, _, pid = PTY.spawn(
-        'QUEUES=test ruby -Ilib bin/disc -r ./examples/failer'
-      )
-      sleep 0.5
+    run('QUEUES=test ruby -Ilib bin/disc -r ./examples/failer') do |cout, pid|
+      output = Timeout.timeout(1) { cout.take(5) }
 
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
 
-      counter = 0
-      tasks = {
-        reported_error: false,
-        printed_message: false,
-        printed_job: false
-      }
+      assert output.grep(/<insert error reporting here>/).any?
+      assert output.grep(/this can only end positively/).any?
+      assert output.grep(/Failer/).any?
 
-      while tasks.values.include?(false) && counter < 5
-        counter += 1
-        output = cout.gets
-
-        tasks[:reported_error] = true   if output.match(/<insert error reporting here>/)
-        tasks[:printed_message] = true  if output.match(/this can only end positively/)
-        tasks[:printed_job] = true      if output.match(/Failer/)
-      end
-
-      assert !tasks.values.include?(false)
-
-      begin
-        Process.getpgid(pid)
-        assert true
-      rescue Errno::ESRCH
-        assert false
-      end
-    ensure
-      Process.kill("KILL", pid)
+      assert is_running?(pid)
     end
   end
 end
