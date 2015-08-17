@@ -1,4 +1,4 @@
-# Disc
+# Disc [![Build Status](https://travis-ci.org/pote/disc.svg?branch=master)](https://travis-ci.org/pote/disc)
 
 Disc fills the gap between your Ruby service objects and [antirez](http://antirez.com/)'s wonderful [Disque](https://github.com/antirez/disque) backend.
 
