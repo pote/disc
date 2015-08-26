@@ -28,6 +28,14 @@ class Disc
     @disque_timeout = timeout
   end
 
+  def self.default_queue
+    @default_queue ||= 'default'
+  end
+
+  def self.default_queue=(queue)
+    @default_queue = queue
+  end
+
   def self.on_error(exception, job)
     $stderr.puts exception
   end
@@ -101,7 +109,8 @@ class Disc
         @disque = disque
       end
 
-      def disc(options = {})
+      def disc(queue: nil, **options)
+        @queue = queue
         @disc_options = options
       end
 
@@ -110,10 +119,14 @@ class Disc
       end
 
       def queue
-        disc_options.fetch(:queue, 'default')
+        @queue || Disc.default_queue
       end
 
-      def enqueue(args = [], at: nil, queue: nil)
+      def enqueue(args = [], at: nil, queue: nil, **options)
+        options = disc_options.merge(options).tap do |opt|
+          opt[:delay] = at.to_time.to_i - DateTime.now.to_time.to_i unless at.nil?
+        end
+
         disque.push(
           queue || self.queue,
           {
@@ -121,7 +134,7 @@ class Disc
             arguments: Array(args)
           }.to_msgpack,
           Disc.disque_timeout,
-          delay: at.nil? ? nil : (at.to_time.to_i - DateTime.now.to_time.to_i)
+          options
         )
       end
     end

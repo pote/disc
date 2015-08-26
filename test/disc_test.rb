@@ -130,4 +130,67 @@ scope do
       assert is_running?(pid)
     end
   end
+
+  test 'enqueue supports replicate' do
+    error = Echoer.enqueue(['one argument', { random: 'data' }, 3], replicate: 100) rescue $!
+
+    assert_equal RuntimeError, error.class
+    assert_equal "NOREPL Not enough reachable nodes for the requested replication level", error.message
+  end
+
+  test 'enqueue supports delay' do
+    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], delay: 2)
+
+    jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
+    assert jobs.empty?
+
+    sleep 1
+    jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
+    assert jobs.empty?
+
+    sleep 2
+    jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
+    assert jobs.any?
+    assert_equal 1, jobs.size
+  end
+
+  test 'enqueue supports retry' do
+    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], retry: 1)
+
+    jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
+    assert jobs.any?
+    assert_equal 1, jobs.size
+
+    sleep 1.5
+    jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
+    assert jobs.any?
+    assert_equal 1, jobs.size
+  end
+
+  test 'enqueue supports ttl' do
+    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], ttl: 1)
+
+    sleep 1.5
+    jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
+    assert jobs.empty?
+  end
+
+  test 'enqueue supports maxlen' do
+    Echoer.enqueue(['one argument', { random: 'data' }, 3], maxlen: 1)
+    # disque off by-one bug? see: https://github.com/antirez/disque/issues/109
+    Echoer.enqueue(['one argument', { random: 'data' }, 3], maxlen: 1)
+    error = Echoer.enqueue(['one argument', { random: 'data' }, 3], maxlen: 1) rescue $!
+
+    assert_equal RuntimeError, error.class
+    assert_equal "MAXLEN Queue is already longer than the specified MAXLEN count", error.message
+  end
+
+  test 'enqueue supports async' do
+    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], async: true)
+
+    sleep 1 # async is too fast to reliably assert an empty queue, let's wait instead
+    jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
+    assert jobs.any?
+    assert_equal 1, jobs.size
+  end
 end
