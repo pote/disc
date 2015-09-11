@@ -14,6 +14,6 @@ Gem::Specification.new do |s|
   s.executables.push('disc')
 
   s.add_dependency('disque', '~> 0.0.6')
-  s.add_dependency('msgpack', '~> 0.6.1')
+  s.add_dependency('msgpack', '>= 0.5.0', '< 0.7')
   s.add_dependency('clap', '~> 1.0')
 end
