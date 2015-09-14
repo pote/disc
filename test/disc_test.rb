@@ -177,8 +177,6 @@ scope do
 
   test 'enqueue supports maxlen' do
     Echoer.enqueue(['one argument', { random: 'data' }, 3], maxlen: 1)
-    # disque off by-one bug? see: https://github.com/antirez/disque/issues/109
-    Echoer.enqueue(['one argument', { random: 'data' }, 3], maxlen: 1)
     error = Echoer.enqueue(['one argument', { random: 'data' }, 3], maxlen: 1) rescue $!
 
     assert_equal RuntimeError, error.class

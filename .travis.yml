@@ -9,7 +9,7 @@ cache:
     - gems
 before_install:
   - test -d disque/.git || git clone -n https://github.com/antirez/disque.git
-  - cd disque && git fetch origin && git checkout -f master && make && cd ..
+  - cd disque && git fetch origin && git checkout -f origin/master && make && cd ..
 install:
   - export GEM_HOME=$PWD/gems/$RUBY_VERSION
   - export GEM_PATH=$GEM_HOME:$GEM_PATH
