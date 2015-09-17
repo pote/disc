@@ -3,6 +3,12 @@
 require 'disc'
 require 'clap'
 
+if ARGV.empty?
+  $stdout.puts('Usage: disc -r FILE')
+
+  exit(1)
+end
+
 Clap.run ARGV,
   "-r" => lambda { |file| require file }
 
