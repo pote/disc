@@ -14,8 +14,6 @@ install:
   - export GEM_HOME=$PWD/gems/$RUBY_VERSION
   - export GEM_PATH=$GEM_HOME:$GEM_PATH
   - export PATH=$GEM_HOME/bin:$PWD/disque/src:$PATH
-  - mkdir -p $GEM_HOME
-  - which dep || gem install dep
-  - dep install
+  - cat .gems* | xargs gem install
 before_script: disque-server --daemonize yes
 script: make test
