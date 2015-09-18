@@ -46,8 +46,16 @@ class Disc
                 :timeout,
                 :count
 
+    def self.current
+      @current ||= new
+    end
+
     def self.run
-      new.run
+      current.run
+    end
+
+    def self.stop
+      current.stop
     end
 
     def initialize(options = {})
@@ -73,6 +81,10 @@ class Disc
       self
     end
 
+    def stop
+      @stop = true
+    end
+
     def run
       $stdout.puts("Disc::Worker listening in #{queues}")
       loop do
@@ -87,6 +99,8 @@ class Disc
             Disc.on_error(err, job.update('id' => msgid, 'queue' => queue))
           end
         end
+
+        break if @stop
       end
     end
   end
