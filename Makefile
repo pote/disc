@@ -32,11 +32,9 @@ pkg/%-$(VERSION).gem: %.gemspec $(VERSION_FILE) | pkg
 	mv $(@F) pkg/
 
 $(DEPS): $(GEM_HOME) .gems
-	which dep &>/dev/null || gem install dep
-	dep install
-	touch $(GEM_HOME)/installed
+	cat .gems | xargs gem install && touch $(GEM_HOME)/installed
 
-pkg:
+pkg $(GEM_HOME):
 	mkdir -p $@
 
 .PHONY: all test release clean
