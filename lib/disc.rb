@@ -1,12 +1,18 @@
 require 'date'
 require 'disque'
 require 'msgpack'
+require 'connection_pool'
 
 require_relative 'disc/version'
 
 class Disc
-  attr_reader :disque,
-    :disque_timeout
+  def self.pool
+    @pool ||= begin
+      concurrency = Integer(ENV.fetch('DISC_CONCURRENCY', 25))
+      tolerance = Integer(ENV.fetch('DISC_TOLERANCE', disque_timeout / 1000.0))
+      ConnectionPool.new(size: concurrency, timeout: tolerance) { true }
+    end
+  end
 
   def self.disque
     @disque ||= Disque.new(
@@ -21,7 +27,7 @@ class Disc
   end
 
   def self.disque_timeout
-    @disque_timeout ||= 100
+    @disque_timeout ||= Integer(ENV.fetch('DISQUE_TIMEOUT', 2000))
   end
 
   def self.disque_timeout=(timeout)
@@ -52,25 +58,9 @@ class Disc
 
     def initialize(options = {})
       @disque = options.fetch(:disque, Disc.disque)
-      @queues = options.fetch(
-        :queues,
-        ENV.fetch('QUEUES', 'default')
-      ).split(',')
-      @count = Integer(
-        options.fetch(
-          :count,
-          ENV.fetch('DISQUE_COUNT', '1')
-        )
-      )
-      @timeout = Integer(
-        options.fetch(
-          :timeout,
-          ENV.fetch('DISQUE_TIMEOUT', '2000')
-        )
-      )
-
-      self.run if options[:run]
-      self
+      @queues = options.fetch(:queues, ENV.fetch('QUEUES', 'default')).split(',')
+      @count = Integer(options.fetch(:count, ENV.fetch('DISQUE_COUNT', '1')))
+      @timeout = Integer(options.fetch(:timeout, Disc.disque_timeout))
     end
 
     def run
@@ -78,13 +68,15 @@ class Disc
       loop do
         jobs = disque.fetch(from: queues, timeout: timeout, count: count)
         Array(jobs).each do |queue, msgid, serialized_job|
-          begin
-            job = MessagePack.unpack(serialized_job)
-            instance = Object.const_get(job['class']).new
-            instance.perform(*job['arguments'])
-            disque.call('ACKJOB', msgid)
-          rescue => err
-            Disc.on_error(err, job.update('id' => msgid, 'queue' => queue))
+          Disc.pool.with do
+            begin
+              job = MessagePack.unpack(serialized_job)
+              instance = Object.const_get(job['class']).new
+              instance.perform(*job['arguments'])
+              disque.call('ACKJOB', msgid)
+            rescue => err
+              Disc.on_error(err, job.update('id' => msgid, 'queue' => queue))
+            end
           end
         end
       end
@@ -102,7 +94,7 @@ class Disc
 
     module ClassMethods
       def disque
-        defined?(@disque) ? @disque : Disc.disque
+        @disque ||= Disc.disque
       end
 
       def disque=(disque)
@@ -129,10 +121,7 @@ class Disc
 
         disque.push(
           queue || self.queue,
-          {
-            class: self.name,
-            arguments: Array(args)
-          }.to_msgpack,
+          { class: self.name, arguments: Array(args) }.to_msgpack,
           Disc.disque_timeout,
           options
         )
