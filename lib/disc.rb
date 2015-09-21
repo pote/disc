@@ -88,6 +88,8 @@ class Disc
           end
         end
       end
+    ensure
+      disque.quit
     end
   end
 
