@@ -32,7 +32,7 @@ require_relative '../examples/failer'
 
 prepare do
   Disc.disque_timeout = 1 # 1ms so we don't wait at all.
-  Disc.disque.call('DEBUG', 'FLUSHALL')
+  Disc.flush
 end
 
 scope do

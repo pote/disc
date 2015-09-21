@@ -36,6 +36,10 @@ class Disc
     @default_queue = queue
   end
 
+  def self.flush
+    Disc.disque.call('DEBUG', 'FLUSHALL')
+  end
+
   def self.on_error(exception, job)
     $stderr.puts exception
   end
