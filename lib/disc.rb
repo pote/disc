@@ -5,9 +5,6 @@ require 'msgpack'
 require_relative 'disc/version'
 
 class Disc
-  attr_reader :disque,
-    :disque_timeout
-
   def self.disque
     @disque ||= Disque.new(
       ENV.fetch('DISQUE_NODES', 'localhost:7711'),
@@ -112,15 +109,37 @@ class Disc
   end
 
   module Job
-    attr_reader :arguments,
-                :disque,
-                :disc_options
+    attr_accessor :disque_id,
+                  :arguments
 
     def self.included(base)
       base.extend(ClassMethods)
     end
 
+    def info
+      return nil if disque_id.nil?
+
+      Hash[*self.class.disque.call("SHOW", disque_id)]
+    end
+
+    def state
+      info.fetch('state')
+    end
+
     module ClassMethods
+      def [](disque_id)
+        job_data = disque.call("SHOW", disque_id)
+        return nil if job_data.nil?
+
+        job = self.new
+        job_data = Hash[*job_data]
+
+        job.disque_id = disque_id
+        job.arguments = MessagePack.unpack(job_data.fetch('body')).fetch('arguments')
+
+        return job
+      end
+
       def disque
         defined?(@disque) ? @disque : Disc.disque
       end
@@ -147,7 +166,7 @@ class Disc
           opt[:delay] = at.to_time.to_i - DateTime.now.to_time.to_i unless at.nil?
         end
 
-        disque.push(
+        disque_id = disque.push(
           queue || self.queue,
           {
             class: self.name,
@@ -156,6 +175,8 @@ class Disc
           Disc.disque_timeout,
           options
         )
+
+        return self[disque_id]
       end
     end
   end

@@ -55,7 +55,7 @@ scope do
   end
 
   test 'jobs are enqueued to the correct Disque queue with appropriate parameters and class' do
-    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3])
+    job_instance = Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.any?
@@ -68,7 +68,7 @@ scope do
       assert job.has_key?('arguments')
 
       assert_equal 'Echoer', job['class']
-      assert_equal jobid, id
+      assert_equal job_instance.disque_id, id
 
       args = job['arguments']
       assert_equal 3, args.size
@@ -78,8 +78,23 @@ scope do
     end
   end
 
+  test 'we get easy access to the job via the job id' do
+    job_instance = Echoer.enqueue(['one argument', { random: 'data' }, 3])
+
+    assert job_instance.is_a?(Echoer)
+    assert !job_instance.disque_id.nil?
+    assert !job_instance.info.nil?
+
+    job = Echoer[job_instance.disque_id]
+
+    assert job.is_a?(Echoer)
+    assert_equal 'queued', job.state
+    assert_equal 3, job.arguments.count
+    assert_equal 'one argument', job.arguments.first
+  end
+
   test 'enqueue at timestamp behaves properly' do
-    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], at: Time.now + 1)
+    job_instance = Echoer.enqueue(['one argument', { random: 'data' }, 3], at: Time.now + 1)
 
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.empty?
@@ -95,7 +110,7 @@ scope do
 
     jobs.first.tap do |queue, id, serialized_job|
       assert_equal 'test', queue
-      assert_equal jobid, id
+      assert_equal job_instance.disque_id, id
       job = MessagePack.unpack(serialized_job)
       assert job.has_key?('class')
       assert job.has_key?('arguments')
@@ -116,7 +131,7 @@ scope do
   end
 
   test 'Disc.on_error will catch unhandled exceptions and keep disc alive' do
-    Failer.enqueue('this can only end positively')
+    failer = Failer.enqueue('this can only end positively')
 
     run('QUEUES=test ruby -Ilib bin/disc -r ./examples/failer') do |cout, pid|
       output = Timeout.timeout(1) { cout.take(5) }
@@ -139,7 +154,7 @@ scope do
   end
 
   test 'enqueue supports delay' do
-    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], delay: 2)
+    job_instance = Echoer.enqueue(['one argument', { random: 'data' }, 3], delay: 2)
 
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.empty?
@@ -155,7 +170,7 @@ scope do
   end
 
   test 'enqueue supports retry' do
-    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], retry: 1)
+    job_instance = Echoer.enqueue(['one argument', { random: 'data' }, 3], retry: 1)
 
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
     assert jobs.any?
@@ -168,7 +183,7 @@ scope do
   end
 
   test 'enqueue supports ttl' do
-    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], ttl: 1)
+    job_instance = Echoer.enqueue(['one argument', { random: 'data' }, 3], ttl: 1)
 
     sleep 1.5
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
@@ -184,7 +199,7 @@ scope do
   end
 
   test 'enqueue supports async' do
-    jobid = Echoer.enqueue(['one argument', { random: 'data' }, 3], async: true)
+    job_instance = Echoer.enqueue(['one argument', { random: 'data' }, 3], async: true)
 
     sleep 1 # async is too fast to reliably assert an empty queue, let's wait instead
     jobs = Array(Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1))
