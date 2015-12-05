@@ -33,6 +33,10 @@ class Disc
     @default_queue = queue
   end
 
+  def self.qlen(queue)
+    disque.call('QLEN', queue)
+  end
+
   def self.flush
     Disc.disque.call('DEBUG', 'FLUSHALL')
   end

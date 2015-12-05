@@ -93,6 +93,12 @@ scope do
     assert_equal 'one argument', job.arguments.first
   end
 
+  test 'we can query the lenght of a given queue' do
+    job_instance = Echoer.enqueue(['one argument', { random: 'data' }, 3])
+
+    assert_equal 1, Disc.qlen(Echoer.queue)
+  end
+
   test 'enqueue at timestamp behaves properly' do
     job_instance = Echoer.enqueue(['one argument', { random: 'data' }, 3], at: Time.now + 1)
 
