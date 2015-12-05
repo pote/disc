@@ -165,6 +165,10 @@ class Disc
         @queue || Disc.default_queue
       end
 
+      def perform(arguments)
+        self.new.perform(*arguments)
+      end
+
       def enqueue(args = [], at: nil, queue: nil, **options)
         options = disc_options.merge(options).tap do |opt|
           opt[:delay] = at.to_time.to_i - DateTime.now.to_time.to_i unless at.nil?
