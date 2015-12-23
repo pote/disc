@@ -100,6 +100,7 @@ class Disc
             instance = Object.const_get(job['class']).new
             instance.perform(*job['arguments'])
             disque.call('ACKJOB', msgid)
+            $stdout.puts("Completed #{job['class']} id #{msgid}")
           rescue => err
             Disc.on_error(err, job.update('id' => msgid, 'queue' => queue))
           end
