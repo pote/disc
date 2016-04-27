@@ -2,11 +2,11 @@
 
 Disc fills the gap between your Ruby service objects and [antirez](http://antirez.com/)'s wonderful [Disque](https://github.com/antirez/disque) backend.
 
-<a href=https://www.flickr.com/photos/noodlefish/5321412234" target="blank_">
+<a href="https://www.flickr.com/photos/noodlefish/5321412234" target="blank_">
 ![Disc Wars!](https://cloud.githubusercontent.com/assets/437/8634016/b63ee0f8-27e6-11e5-9a78-51921bd32c88.jpg)
 </a>
 
-## Usage
+## Basic Usage
 
 1.  Install the gem
 
@@ -35,17 +35,8 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
   CreateGameGrid.enqueue('light_cycle')
   ```
 
-4. Or enqueue them to be performed at some time in the future, or on a queue other than it's default.
 
-  ```ruby
-  CreateGameGrid.enqueue(
-    'disc_arena',
-    at: DateTime.new(2015, 12, 31),
-    queue: 'not_so_important'
-  )
-  ```
-
-5. Create a file that requires anything needed for your jobs to run
+4. Create a file that requires anything needed for your jobs to run
 
   ```ruby
 # disc_init.rb
@@ -53,18 +44,49 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
   Dir['./jobs/**/*.rb'].each { |job| require job }
   ```
 
-6. Run as many Disc Worker processes as you wish, requiring your `disc_init.rb` file
+5. Run as many Disc Worker processes as you wish, requiring your `disc_init.rb` file
 
   ```bash
   $ QUEUES=urgent,default disc -r ./disc_init.rb
   ```
 
-## Notes about Jobs
+4. Or enqueue them to be performed at some time in the future, or on a queue other than it's default.
 
-Jobs are fairly straightforward Ruby classes, internally Disc serializes them to MessagePack so they can be stored in Disque, this has a few implications:
+  ```ruby
+  CreateGameGrid.enqueue(
+    'disc_arena',
+    at: DateTime.new(2020, 12, 31),
+    queue: 'not_so_important'
+  )
+  ```
 
-* Don't enqueue complex objects! Instead of `user`, enqueue `user.id`!
-* If your job takes multiple arguments, you'll want to pass all those arguments in the first parameter of `#enqueue` as an array.
+## Disc Jobs
+
+`Disc::Job` is a module you can include in your Ruby classes, this allows a Disc worker process to execute the code in them by adding a class method (`#enqueue`) with the following signature:
+
+```Ruby
+def enqueue(arguments, at: nil, queue: nil, **options)
+end
+```
+
+Where:
+
+* `arguments` is an optional array of arguments with which to execute the code
+	* Arguments are serialized in MessagePack in order to be persisted in Disque, so don't pass anything that can't be serialized and parsed by `MessagePack.pack` and `MessagePack.unpack`
+	* For convenience, any single object can be passed, `Array.wrap` will be used internally to preserve the array structure.
+* `at` is an optional named parameter specifying a moment in the future in which to run the job, must respond to `#to_time`.
+* `queue` is an optional named parameter specifying the name of the queue in which to store the job, defaults to the class Disc queue or to 'default' if no Disc queue is specified in the class.
+* `**options` is an optional hash of options to forward internally to [disque-rb](https://github.com/soveran/disque-rb)'s `#push` method, valid options are:
+  * `replicate: <count>` specifies the number of nodes the job should be replicated to.
+	* `delay: <sec>` specifies a delay time in seconds for the job to be delivered to a Disc worker, it is ignored if using the `at` parameter.
+	* `ttl: <sec>` specifies the job's time to live in seconds: after this time, the job is deleted even if it was not successfully delivered. If not specified, the default TTL is one day.
+	* `maxlen: <count>` specifies that if there are already <count> messages queued for the specified queue name, the message is refused.
+	* `async: true` asks the server to let the command return ASAP and replicate the job to other nodes in the background.
+
+
+You can see [Disque's ADDJOB documentation](https://github.com/antirez/disque#addjob-queue_name-job-ms-timeout-replicate-count-delay-sec-retry-sec-ttl-sec-maxlen-count-async) for more details
+
+When a Disc worker process is assigned a job, it will create a new intance of the job's class and execute the `#perform` method with whatever arguments were previously passed to `#enqueue`.
 
 Example:
 
