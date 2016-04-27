@@ -5,9 +5,6 @@ require 'msgpack'
 require_relative 'disc/version'
 
 class Disc
-  attr_reader :disque,
-    :disque_timeout
-
   def self.disque
     @disque ||= Disque.new(
       ENV.fetch('DISQUE_NODES', 'localhost:7711'),
@@ -34,6 +31,10 @@ class Disc
 
   def self.default_queue=(queue)
     @default_queue = queue
+  end
+
+  def self.qlen(queue)
+    disque.call('QLEN', queue)
   end
 
   def self.flush
@@ -99,6 +100,7 @@ class Disc
             instance = Object.const_get(job['class']).new
             instance.perform(*job['arguments'])
             disque.call('ACKJOB', msgid)
+            $stdout.puts("Completed #{job['class']} id #{msgid}")
           rescue => err
             Disc.on_error(err, job.update('id' => msgid, 'queue' => queue))
           end
@@ -112,15 +114,37 @@ class Disc
   end
 
   module Job
-    attr_reader :arguments,
-                :disque,
-                :disc_options
+    attr_accessor :disque_id,
+                  :arguments
 
     def self.included(base)
       base.extend(ClassMethods)
     end
 
+    def info
+      return nil if disque_id.nil?
+
+      Hash[*self.class.disque.call("SHOW", disque_id)]
+    end
+
+    def state
+      info.fetch('state')
+    end
+
     module ClassMethods
+      def [](disque_id)
+        job_data = disque.call("SHOW", disque_id)
+        return nil if job_data.nil?
+
+        job = self.new
+        job_data = Hash[*job_data]
+
+        job.disque_id = disque_id
+        job.arguments = MessagePack.unpack(job_data.fetch('body')).fetch('arguments')
+
+        return job
+      end
+
       def disque
         defined?(@disque) ? @disque : Disc.disque
       end
@@ -142,12 +166,16 @@ class Disc
         @queue || Disc.default_queue
       end
 
+      def perform(arguments)
+        self.new.perform(*arguments)
+      end
+
       def enqueue(args = [], at: nil, queue: nil, **options)
         options = disc_options.merge(options).tap do |opt|
           opt[:delay] = at.to_time.to_i - DateTime.now.to_time.to_i unless at.nil?
         end
 
-        disque.push(
+        disque_id = disque.push(
           queue || self.queue,
           {
             class: self.name,
@@ -156,6 +184,8 @@ class Disc
           Disc.disque_timeout,
           options
         )
+
+        return self[disque_id]
       end
     end
   end
