@@ -1,6 +1,6 @@
 require 'date'
 require 'disque'
-require 'msgpack'
+require 'json'
 
 require_relative 'disc/version'
 
@@ -43,6 +43,14 @@ class Disc
 
   def self.on_error(exception, job)
     $stderr.puts exception
+  end
+
+  def self.serialize(args)
+    JSON.dump(args)
+  end
+
+  def self.deserialize(data)
+    JSON.parse(data)
   end
 
   class Worker
@@ -96,7 +104,7 @@ class Disc
         jobs = disque.fetch(from: queues, timeout: timeout, count: count)
         Array(jobs).each do |queue, msgid, serialized_job|
           begin
-            job = MessagePack.unpack(serialized_job)
+            job = Disc.deserialize(serialized_job)
             instance = Object.const_get(job['class']).new
             instance.perform(*job['arguments'])
             disque.call('ACKJOB', msgid)
@@ -140,7 +148,7 @@ class Disc
         job_data = Hash[*job_data]
 
         job.disque_id = disque_id
-        job.arguments = MessagePack.unpack(job_data.fetch('body')).fetch('arguments')
+        job.arguments = Disc.deserialize(job_data.fetch('body')).fetch('arguments')
 
         return job
       end
@@ -177,10 +185,10 @@ class Disc
 
         disque_id = disque.push(
           queue || self.queue,
-          {
+          Disc.serialize({
             class: self.name,
             arguments: Array(args)
-          }.to_msgpack,
+          }),
           Disc.disque_timeout,
           options
         )

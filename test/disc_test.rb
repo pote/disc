@@ -1,6 +1,5 @@
 require 'cutest'
 require 'disc'
-require 'msgpack'
 require 'pty'
 require 'timeout'
 
@@ -62,7 +61,7 @@ scope do
     assert_equal 1, jobs.count
 
     jobs.first.tap do |queue, id, serialized_job|
-      job = MessagePack.unpack(serialized_job)
+      job = Disc.deserialize(serialized_job)
 
       assert job.has_key?('class')
       assert job.has_key?('arguments')
@@ -117,7 +116,7 @@ scope do
     jobs.first.tap do |queue, id, serialized_job|
       assert_equal 'test', queue
       assert_equal job_instance.disque_id, id
-      job = MessagePack.unpack(serialized_job)
+      job = Disc.deserialize(serialized_job)
       assert job.has_key?('class')
       assert job.has_key?('arguments')
       assert_equal 'Echoer', job['class']
