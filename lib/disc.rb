@@ -187,7 +187,7 @@ class Disc
       ## `arguments`  - an optional array of arguments with which to execute
       #                 the job's #perform method.
       #
-      # `at`          - an optional named parameter specifying a moment in the
+      ## `at`         - an optional named parameter specifying a moment in the
       #                 future in which to run the job, must respond to
       #                 `#to_time`.
       #
