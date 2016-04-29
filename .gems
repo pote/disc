@@ -1,5 +1,4 @@
 cutest:1.2.2
 byebug:5.0.0
 disque:0.0.6
-msgpack:0.6.2
 celluloid:0.17.0
