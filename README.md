@@ -65,25 +65,60 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
 `Disc::Job` is a module you can include in your Ruby classes, this allows a Disc worker process to execute the code in them by adding a class method (`#enqueue`) with the following signature:
 
 ```Ruby
+## Disc's `#enqueue` is the main user-facing method of a Disc job, it
+#  enqueues a job with a given set of arguments in Disque, so it can be
+#  picked up by a Disc worker process.
+#
+## Parameters:
+#
+## `arguments`  - an optional array of arguments with which to execute
+#                 the job's #perform method.
+#
+# `at`          - an optional named parameter specifying a moment in the
+#                 future in which to run the job, must respond to
+#                 `#to_time`.
+#
+## `queue`      - an optional named parameter specifying the name of the
+#                 queue in which to store the job, defaults to the class
+#                 Disc queue or to 'default' if no Disc queue is specified
+#                 in the class.
+#
+##  `**options` - an optional hash of options to forward internally to
+#                 [disque-rb](https://github.com/soveran/disque-rb)'s
+#                 `#push` method, valid options are:
+#
+##  `replicate: <count>`  - specifies the number of nodes the job should
+#                           be replicated to.
+#
+### `delay: <sec>`        - specifies a delay time in seconds for the job
+#                           to be delivered to a Disc worker, it is ignored
+#                           if using the `at` parameter.
+#
+### `ttl: <sec>`          - specifies the job's time to live in seconds:
+#                           after this time, the job is deleted even if
+#                           it was not successfully delivered. If not
+#                           specified, the default TTL is one day.
+#
+### `maxlen: <count>`     - specifies that if there are already <count>
+#                           messages queued for the specified queue name,
+#                           the message is refused.
+#
+### `async: true`         - asks the server to let the command return ASAP
+#                           and replicate the job to other nodes in the background.
+#
+#
+### CAVEATS
+#
+## For convenience, any object can be passed as the `arguments` parameter,
+#  `Array.wrap` will be used internally to preserve the array structure.
+#
+## The `arguments` parameter is serialized for storage using `Disc.serialize`
+#  and Disc workers picking it up use `Disc.deserialize` on it, both methods
+#  use standard library json but can be overriden by the user
+#
 def enqueue(arguments, at: nil, queue: nil, **options)
 end
 ```
-
-Where:
-
-* `arguments` is an optional array of arguments with which to execute the code
-	* Arguments are serialized in MessagePack in order to be persisted in Disque, so don't pass anything that can't be serialized and parsed by `MessagePack.pack` and `MessagePack.unpack`
-	* For convenience, any single object can be passed, `Array.wrap` will be used internally to preserve the array structure.
-* `at` is an optional named parameter specifying a moment in the future in which to run the job, must respond to `#to_time`.
-* `queue` is an optional named parameter specifying the name of the queue in which to store the job, defaults to the class Disc queue or to 'default' if no Disc queue is specified in the class.
-* `**options` is an optional hash of options to forward internally to [disque-rb](https://github.com/soveran/disque-rb)'s `#push` method, valid options are:
-  * `replicate: <count>` specifies the number of nodes the job should be replicated to.
-	* `delay: <sec>` specifies a delay time in seconds for the job to be delivered to a Disc worker, it is ignored if using the `at` parameter.
-	* `ttl: <sec>` specifies the job's time to live in seconds: after this time, the job is deleted even if it was not successfully delivered. If not specified, the default TTL is one day.
-	* `maxlen: <count>` specifies that if there are already <count> messages queued for the specified queue name, the message is refused.
-	* `async: true` asks the server to let the command return ASAP and replicate the job to other nodes in the background.
-
-
 You can see [Disque's ADDJOB documentation](https://github.com/antirez/disque#addjob-queue_name-job-ms-timeout-replicate-count-delay-sec-retry-sec-ttl-sec-maxlen-count-async) for more details
 
 When a Disc worker process is assigned a job, it will create a new intance of the job's class and execute the `#perform` method with whatever arguments were previously passed to `#enqueue`.
