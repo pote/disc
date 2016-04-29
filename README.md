@@ -65,6 +65,13 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
 `Disc::Job` is a module you can include in your Ruby classes, this allows a Disc worker process to execute the code in them by adding a class method (`#enqueue`) with the following signature:
 
 ```Ruby
+def enqueue(arguments, at: nil, queue: nil, **options)
+end
+```
+
+Signature documentation follows:
+
+```ruby
 ## Disc's `#enqueue` is the main user-facing method of a Disc job, it
 #  enqueues a job with a given set of arguments in Disque, so it can be
 #  picked up by a Disc worker process.
@@ -116,9 +123,8 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
 #  and Disc workers picking it up use `Disc.deserialize` on it, both methods
 #  use standard library json but can be overriden by the user
 #
-def enqueue(arguments, at: nil, queue: nil, **options)
-end
 ```
+
 You can see [Disque's ADDJOB documentation](https://github.com/antirez/disque#addjob-queue_name-job-ms-timeout-replicate-count-delay-sec-retry-sec-ttl-sec-maxlen-count-async) for more details
 
 When a Disc worker process is assigned a job, it will create a new intance of the job's class and execute the `#perform` method with whatever arguments were previously passed to `#enqueue`.
