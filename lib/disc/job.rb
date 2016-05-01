@@ -20,19 +20,6 @@ module Disc::Job
   #end
 
   module ClassMethods
-    def [](disque_id)
-      job_data = disque.call("SHOW", disque_id)
-      return nil if job_data.nil?
-
-      job = self.new
-      job_data = Hash[*job_data]
-
-      job.disque_id = disque_id
-      job.arguments = Disc.deserialize(job_data.fetch('body')).fetch('arguments')
-
-      return job
-    end
-
     def disque
       defined?(@disque) ? @disque : Disc.disque
     end
