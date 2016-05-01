@@ -54,4 +54,3 @@ end
 
 require_relative 'disc/job'
 require_relative 'disc/version'
-
