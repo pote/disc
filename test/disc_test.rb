@@ -1,7 +1,5 @@
 require 'cutest'
 require 'disc'
-require 'pty'
-require 'timeout'
 
 require_relative '../examples/echoer'
 
@@ -22,9 +20,16 @@ scope do
     assert_equal 'one argument', job_data['arguments'].first
   end
 
-  test 'we can query the length of a given queue' do
+  test 'we can query the length of a given queue with Disc.qlen' do
     Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
     assert_equal 1, Disc.qlen(Echoer.queue)
+  end
+
+  test 'Disc.flush deletes everything in the queue' do
+    Echoer.enqueue(['one argument', { random: 'data' }, 3])
+    Disc.flush
+
+    assert_equal 0, Disc.qlen(Echoer.queue)
   end
 end
