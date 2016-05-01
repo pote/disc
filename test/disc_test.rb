@@ -9,6 +9,12 @@ prepare do
 end
 
 scope do
+  test 'Disc should be able to communicate with Disque' do
+    assert !Disc.disque.nil?
+
+    assert_equal 'PONG', Disc.disque.call('PING')
+  end
+
   test 'we get easy access to the job via the job id with Disc[job_id]' do
     job_id = Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
