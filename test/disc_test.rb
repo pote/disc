@@ -59,5 +59,15 @@ scope do
     rescue => err
       assert err.is_a?(Disc::NonParsableJobError)
     end
+
+    serialized_job = Disc.serialize(
+      { class: 'NonExistantDiscJobClass', arguments: [] }
+    )
+    begin
+      job_instance, arguments = Disc.load_job(serialized_job)
+      assert_equal 'Should not reach this point', false
+    rescue => err
+      assert err.is_a?(Disc::UnknownJobClassError)
+    end
   end
 end
