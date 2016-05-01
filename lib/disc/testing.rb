@@ -40,7 +40,7 @@ module Disc::Job::ClassMethods
     when 'testing'
       Disc.enqueue(self.class.name, queue || self.queue, args, at: at, options)
     when 'inline'
-      self.new.perform(*args)
+      self.perform(*args)
     else
       raise "Unknown Disc testing mode, this shouldn't happen"
     end
