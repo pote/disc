@@ -50,6 +50,40 @@ class Disc
   def self.deserialize(data)
     JSON.parse(data)
   end
+
+  def self.job_state(disque_id)
+    job_data = disque.call("SHOW", disque_id)
+    return nil if job_data.nil?
+
+    job_data.fetch('state')
+  end
+
+  ## Receives:
+  #
+  #   A string containing data serialized by `Disc.serialize`
+  #
+  ## Returns:
+  #
+  #   An array containing:
+  #
+  #     * An instance of the given job class
+  #     * An array of arguments to pass to the job's `#perorm` class.
+  #
+  def self.load_job(serialized_job)
+    begin
+      job_data = Disc.deserialize(serialized_job)
+    rescue => err
+      raise Disc::NonParsableJobError.new(err)
+    end
+
+    begin
+      job_instance = Object.const_get(job_data['class']).new
+    rescue => err
+      raise Disc::UnknownJobClassError.new(err)
+    end
+
+    return [job_instance, job_data['arguments']]
+  end
 end
 
 require_relative 'disc/job'

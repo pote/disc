@@ -52,13 +52,17 @@ class Disc::Worker
       jobs = disque.fetch(from: queues, timeout: timeout, count: count)
       Array(jobs).each do |queue, msgid, serialized_job|
         begin
-          job = Disc.deserialize(serialized_job)
-          instance = Object.const_get(job['class']).new
-          instance.perform(*job['arguments'])
+          job_instance, arguments = Disc.load_job(serialized_job)
+          job_instance.perform(*arguments)
           disque.call('ACKJOB', msgid)
-          $stdout.puts("Completed #{job['class']} id #{msgid}")
+          $stdout.puts("Completed #{ job_instance.class.name } id #{ msgid }")
         rescue => err
-          Disc.on_error(err, job.update('id' => msgid, 'queue' => queue))
+          Disc.on_error(err, {
+            disque_id: msgid,
+            queue: queue,
+            class: defined?(job_instance) ? job_instance.class.name : '',
+            arguments: defined?(arguments) ? arguments : []
+          })
         end
       end
 

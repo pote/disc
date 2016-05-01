@@ -13,6 +13,9 @@ module Disc::Job
   end
 
   def state
+    current_info = info
+    return nil if info.nil?
+
     info.fetch('state')
   end
 
