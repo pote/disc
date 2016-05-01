@@ -51,11 +51,15 @@ class Disc
     JSON.parse(data)
   end
 
-  def self.job_state(disque_id)
+  def self.[](disque_id)
     job_data = disque.call("SHOW", disque_id)
     return nil if job_data.nil?
 
-    job_data.fetch('state')
+    job_data = Hash[*job_data]
+    job_data['arguments'] = Disc.deserialize(job_data['body'])['arguments']
+    job_data['class'] = Disc.deserialize(job_data['body'])['class']
+
+    job_data
   end
 
   ## Receives:

@@ -6,18 +6,18 @@ module Disc::Job
     base.extend(ClassMethods)
   end
 
-  def info
-    return nil if disque_id.nil?
+  #def info
+  #  return nil if disque_id.nil?
 
-    Hash[*self.class.disque.call("SHOW", disque_id)]
-  end
+  #  Hash[*self.class.disque.call("SHOW", disque_id)]
+  #end
 
-  def state
-    current_info = info
-    return nil if info.nil?
+  #def state
+  #  current_info = info
+  #  return nil if info.nil?
 
-    info.fetch('state')
-  end
+  #  info.fetch('state')
+  #end
 
   module ClassMethods
     def [](disque_id)
@@ -114,7 +114,7 @@ module Disc::Job
         opt[:delay] = at.to_time.to_i - DateTime.now.to_time.to_i unless at.nil?
       end
 
-      disque_id = disque.push(
+      disque.push(
         queue || self.queue,
         Disc.serialize({
           class: self.name,
@@ -123,8 +123,6 @@ module Disc::Job
         Disc.disque_timeout,
         options
       )
-
-      return self[disque_id]
     end
   end
 end
