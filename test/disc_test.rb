@@ -38,4 +38,17 @@ scope do
 
     assert_equal 0, Disc.qlen(Echoer.queue)
   end
+
+  test 'Disc.load_job returns a job instance and arguments' do
+    serialized_job = Disc.serialize(
+      { class: 'Echoer', arguments: ['one argument', { random: 'data' }, 3] }
+    )
+
+    job_instance, arguments = Disc.load_job(serialized_job)
+
+    assert job_instance.is_a?(Echoer)
+    assert arguments.is_a?(Array)
+    assert_equal 3, arguments.count
+    assert_equal 'one argument', arguments.first
+  end
 end
