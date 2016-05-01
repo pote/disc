@@ -127,7 +127,7 @@ scope do
   test 'jobs are executed' do
     Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
-    run('QUEUES=test ruby -Ilib bin/disc -r ./examples/echoer') do |cout, pid|
+    run('QUEUES=test ruby -Ilib bin/disc -r disc/worker -r ./examples/echoer') do |cout, pid|
       output = Timeout.timeout(1) { cout.take(3) }
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
@@ -138,7 +138,7 @@ scope do
   test 'Disc.on_error will catch unhandled exceptions and keep disc alive' do
     failer = Failer.enqueue('this can only end positively')
 
-    run('QUEUES=test ruby -Ilib bin/disc -r ./examples/failer') do |cout, pid|
+    run('QUEUES=test ruby -Ilib bin/disc -r disc/worker -r ./examples/failer') do |cout, pid|
       output = Timeout.timeout(1) { cout.take(5) }
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
