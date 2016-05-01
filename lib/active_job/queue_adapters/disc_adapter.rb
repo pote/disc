@@ -1,5 +1,6 @@
 require 'date'
 require 'msgpack'
+require 'disc/worker'
 
 module ActiveJob
   module QueueAdapters
@@ -11,10 +12,10 @@ module ActiveJob
       def self.enqueue_at(job, timestamp)
         Disc.disque.push(
           job.queue_name,
-          {
+          Disc.serialize({
             class: job.class.name,
             arguments: job.arguments
-          }.to_msgpack,
+          }),
           Disc.disque_timeout,
           delay: timestamp.nil? ? nil : (timestamp.to_time.to_i - DateTime.now.to_time.to_i)
         )
