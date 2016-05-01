@@ -40,7 +40,7 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
 
   ```ruby
 # disc_init.rb
-  require 'ohm'
+  require 'disc/worker'
   Dir['./jobs/**/*.rb'].each { |job| require job }
   ```
 
