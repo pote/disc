@@ -90,5 +90,6 @@ class Disc
   end
 end
 
+require_relative 'disc/errors'
 require_relative 'disc/job'
 require_relative 'disc/version'

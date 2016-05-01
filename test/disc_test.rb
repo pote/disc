@@ -51,4 +51,13 @@ scope do
     assert_equal 3, arguments.count
     assert_equal 'one argument', arguments.first
   end
+
+  test 'Disc.load_job raises appropriate errors ' do
+    begin
+      job_instance, arguments = Disc.load_job('gibberish')
+      assert_equal 'Should not reach this point', false
+    rescue => err
+      assert err.is_a?(Disc::NonParsableJobError)
+    end
+  end
 end
