@@ -19,6 +19,7 @@ trap(:TERM, &stop)
 
 require 'clap'
 require_relative '../lib/disc'
+require_relative '../lib/disc/worker'
 
 Clap.run ARGV,
   "-r" => lambda { |file| require file }

@@ -40,7 +40,8 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
 
   ```ruby
 # disc_init.rb
-  require 'disc/worker'
+  # Require here anything that your application needs to run,
+  # like ORMs and your models, database configuration, etc.
   Dir['./jobs/**/*.rb'].each { |job| require job }
   ```
 
@@ -152,8 +153,9 @@ in Disque, to this end Disc uses the `Disc.serialize` and `Disc.deserialize` met
 
 By default, these methods use by default the Ruby standard library json implementation in order to serialize and deserialize job data, this has a few implications:
 
-* Arguments passed to a job's `#enqueue` method need to be serializable by `Disc.serialize` and parsed back by `Disc.deserialize`, so by default you can't pass complex Ruby objects like a `user` model, instead, pass `user.id`, and use that from your job code.
-* You can override `Disc.serialize` and `Disc.deserialize` to use a different JSON implementation, or MessagePack, or whatever else you wish.
+1. Arguments passed to a job's `#enqueue` method need to be serializable by `Disc.serialize` and parsed back by `Disc.deserialize`, so by default you can't pass complex Ruby objects like a `user` model, instead, pass `user.id`, and use that from your job code.
+
+2. You can override `Disc.serialize` and `Disc.deserialize` to use a different JSON implementation, or MessagePack, or whatever else you wish.
 
 
 ## Settings
@@ -184,7 +186,7 @@ end
 Dir["./jobs/**/*.rb"].each { |job| require job }
 ```
 
-## Job Definition
+### Job Definition
 
 The error handler function gets the data of the current job as a Hash, that has the following schema.
 
