@@ -2,8 +2,6 @@ require 'date'
 require 'disque'
 require 'json'
 
-require_relative 'disc/version'
-
 class Disc
   def self.disque
     @disque ||= Disque.new(
@@ -55,3 +53,5 @@ class Disc
 end
 
 require_relative 'disc/job'
+require_relative 'disc/version'
+
