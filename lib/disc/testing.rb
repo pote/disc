@@ -27,9 +27,9 @@ class Disc
 
   def self.enqueue(klass,  arguments, at: nil, queue: nil, **options)
     if queues[queue].nil?
-      queues[queue] = [{arguents: arguments, class: klass, options: options}]
+      queues[queue] = [{arguments: arguments, class: klass, options: options}]
     else
-      queues[queue] << {arguents: arguments, class: klass, options: options}
+      queues[queue] << {arguments: arguments, class: klass, options: options}
     end
   end
 end
