@@ -4,6 +4,7 @@ require 'disc'
 require 'disc/testing'
 
 require_relative '../examples/echoer'
+require_relative '../examples/returner'
 
 prepare do
   Disc.disque_timeout = 1 # 1ms so we don't wait at all.
@@ -32,5 +33,10 @@ scope do
   test "testing mode enqueue jobs into an in-memory list by default" do
     Echoer.enqueue(['one argument', { random: 'data' }, 3])
     assert_equal 'one argument', Disc.queues['test'].first[:arguments].first
+  end
+
+  test "ability to run jobs inline" do
+    Disc.inline!
+    assert_equal 'this is an argument',  Returner.enqueue('this is an argument')
   end
 end
