@@ -304,10 +304,6 @@ Disc is run in the exact same way, for this example it'd be:
 $ QUEUES=urgent disc -r ./disc_init.rb
 ```
 
-## A note on stability
-
-The version of Disque at the time of this writing is `0.0.1`. It is a wonderful project, I know of people running it in production and I expect it will only get better and better with time, but please do not expect Disc to be more production ready than Disque is.
-
 ## Similar Projects
 
 If you want to use Disque but Disc isn't cutting it for you then you should take a look at [Havanna](https://github.com/djanowski/havanna), a project by my friend [@djanowski](https://twitter.com/djanowski).
