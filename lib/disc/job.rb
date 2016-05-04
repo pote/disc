@@ -26,10 +26,6 @@ module Disc::Job
       @queue || Disc.default_queue
     end
 
-    def perform(arguments)
-      self.new.perform(*arguments)
-    end
-
     ## Disc's `#enqueue` is the main user-facing method of a Disc job, it
     #  enqueues a job with a given set of arguments in Disque, so it can be
     #  picked up by a Disc worker process.
