@@ -118,7 +118,7 @@ Signature documentation follows:
 ### CAVEATS
 #
 ## For convenience, any object can be passed as the `arguments` parameter,
-#  `Array.wrap` will be used internally to preserve the array structure.
+#  `Array()` will be used internally to preserve the array structure.
 #
 ## The `arguments` parameter is serialized for storage using `Disc.serialize`
 #  and Disc workers picking it up use `Disc.deserialize` on it, both methods
@@ -195,7 +195,60 @@ The error handler function gets the data of the current job as a Hash, that has 
 | `'class'`     | (String) The Job class.                               |
 | `'arguments'` | (Array) The arguments passed to perform.              |
 | `'queue'`     | (String) The queue from which this job was picked up. |
-| `'id'`        | (String) Disque's job ID.                             |
+| `'disque_id'` | (String) Disque's job ID.                             |
+
+
+## Testing modes
+
+Disc includes a testing mode, so you can run your test suite without a need to run a Disque server.
+
+### Enqueue mode
+
+By default, Disc places your jobs in an in-memory hash, with each queue being a key in the hash and values being an ordered array.
+
+```ruby
+require 'disc'
+require 'disc/testing'
+
+require_relative 'examples/returner'
+Disc.enqueue! #=> This is the default mode for disc/testing so you don't need to specify it,
+              #   you can use this method to go back to the enqueue mode if you switch it.
+
+
+Returner.enqueue('test argument')
+
+Disc.queues
+#=> {"default"=>[{:arguments=>["test argument"], :class=>"Returner", :options=>{}}]}
+
+Returner.enqueue('another test')
+#=> => {"default"=>[{:arguments=>["test argument"], :class=>"Returner", :options=>{}}, {:arguments=>["another test"], :class=>"Returner", :options=>{}}]}
+
+
+```
+
+You can still flush the queues just as you would running on regular mode.
+
+```ruby
+Disc.flush
+
+Disc.queues
+#=> {}
+```
+
+### Inline mode
+
+You also have the option for Disc to execute jobs immediately when `#enqueue` is called.
+
+```ruby
+require 'disc'
+require 'disc/testing'
+
+require_relative 'examples/returner'
+Disc.inline!
+
+Returner.enqueue('test argument')
+#=> 'test argument'
+```
 
 ## [Optional] Celluloid integration
 

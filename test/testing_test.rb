@@ -8,6 +8,7 @@ require_relative '../examples/returner'
 
 prepare do
   Disc.disque_timeout = 1 # 1ms so we don't wait at all.
+  Disc.enqueue!
   Disc.flush
 end
 
@@ -28,6 +29,8 @@ scope do
     assert_equal 1, Disc.queues['test'].count
     assert Disc.queues['test'].first.has_key?(:arguments)
     assert_equal 3, Disc.queues['test'].first[:arguments].count
+    assert_equal 'one argument', Disc.queues['test'].first[:arguments].first
+    assert_equal 'Echoer', Disc.queues['test'].first[:class]
   end
 
   test "testing mode enqueue jobs into an in-memory list by default" do

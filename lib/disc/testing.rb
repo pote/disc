@@ -8,7 +8,7 @@ class Disc
   end
 
   def self.enqueue!
-    @testing_mode = 'testing'
+    @testing_mode = 'enqueue'
   end
 
   def self.inline!
@@ -26,11 +26,14 @@ class Disc
   end
 
   def self.enqueue(klass,  arguments, at: nil, queue: nil, **options)
+    job_attrs = { arguments: arguments, class: klass, options: options }
     if queues[queue].nil?
-      queues[queue] = [{arguments: arguments, class: klass, options: options}]
+      queues[queue] = [job_attrs]
     else
-      queues[queue] << {arguments: arguments, class: klass, options: options}
+      queues[queue] << job_attrs
     end
+
+    job_attrs
   end
 end
 
@@ -38,7 +41,12 @@ module Disc::Job::ClassMethods
   def enqueue(args = [], at: nil, queue: nil, **options)
     case Disc.testing_mode
     when 'enqueue'
-      Disc.enqueue(self.class.name, args, queue: queue || self.queue, at: at, **options)
+      Disc.enqueue(
+        self.name,
+        Array(args),
+        queue: queue || self.queue,
+        at: at,
+        **options)
     when 'inline'
       self.perform(*args)
     else

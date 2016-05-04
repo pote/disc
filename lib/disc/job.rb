@@ -1,23 +1,8 @@
 module Disc::Job
-  attr_accessor :disque_id,
-                :arguments
 
   def self.included(base)
     base.extend(ClassMethods)
   end
-
-  #def info
-  #  return nil if disque_id.nil?
-
-  #  Hash[*self.class.disque.call("SHOW", disque_id)]
-  #end
-
-  #def state
-  #  current_info = info
-  #  return nil if info.nil?
-
-  #  info.fetch('state')
-  #end
 
   module ClassMethods
     def disque
@@ -90,7 +75,7 @@ module Disc::Job
     ### CAVEATS
     #
     ## For convenience, any object can be passed as the `arguments` parameter,
-    #  `Array.wrap` will be used internally to preserve the array structure.
+    #  `Array()` will be used internally to preserve the array structure.
     #
     ## The `arguments` parameter is serialized for storage using `Disc.serialize`
     #  and Disc workers picking it up use `Disc.deserialize` on it, both methods
