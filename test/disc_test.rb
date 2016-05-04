@@ -57,6 +57,7 @@ scope do
       job_instance, arguments = Disc.load_job('gibberish')
       assert_equal 'Should not reach this point', false
     rescue => err
+      assert err.is_a?(Disc::Error)
       assert err.is_a?(Disc::NonParsableJobError)
     end
 
@@ -67,6 +68,7 @@ scope do
       job_instance, arguments = Disc.load_job(serialized_job)
       assert_equal 'Should not reach this point', false
     rescue => err
+      assert err.is_a?(Disc::Error)
       assert err.is_a?(Disc::UnknownJobClassError)
     end
   end

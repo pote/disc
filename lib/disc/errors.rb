@@ -1,4 +1,6 @@
 class Disc
-  class UnknownJobClassError < StandardError; end
-  class NonParsableJobError < StandardError; end
+  class Error < StandardError; end
+
+  class UnknownJobClassError < Error; end
+  class NonParsableJobError  < Error; end
 end
