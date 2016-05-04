@@ -81,12 +81,12 @@ class Disc
     end
 
     begin
-      job_instance = Object.const_get(job_data['class']).new
+      job_class = Object.const_get(job_data['class'])
     rescue => err
       raise Disc::UnknownJobClassError.new(err)
     end
 
-    return [job_instance, job_data['arguments']]
+    return [job_class, job_data['arguments']]
   end
 end
 
