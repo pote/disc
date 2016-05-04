@@ -204,7 +204,7 @@ Disc includes a testing mode, so you can run your test suite without a need to r
 
 ### Enqueue mode
 
-By default, Disc places your jobs in an in-memory hash, with each queue being a key in the hash and values being an ordered array.
+By default, Disc places your jobs in an in-memory hash, with each queue being a key in the hash and values being an array.
 
 ```ruby
 require 'disc'
