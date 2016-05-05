@@ -61,6 +61,20 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
   )
   ```
 
+## Disc Configuration
+
+Disc takes its configuration from environment variables.
+
+| ENV Variable       |  Default Value   | Description
+|:------------------:|:-----------------|:------------|
+| `QUEUES`           | 'default'        | The list of queues that `Disc::Worker` will listen to, it can be a single queue name or a list of comma-separated queues |
+| `DISC_CONCURRENCY` | '25'             | Amount of threads to spawn when Celluloid is available. |
+| `DISQUE_NODES`     | 'localhost:7711' | This is the list of Disque servers to connect to, it can be a single node or a list of comma-separated nodes |
+| `DISQUE_AUTH`      | ''               | Authorization credentials for Disque. |
+| `DISQUE_TIMEOUT`   | '100'            | Time in milliseconds that the client will wait for the Disque server to acknowledge and replicate a job |
+| `DISQUE_CYCLE`     | '1000'           | The client keeps track of which nodes are providing more jobs, after the amount of operations specified in cycle it tries to connect to the preferred node. |
+
+
 ## Disc Jobs
 
 `Disc::Job` is a module you can include in your Ruby classes, this allows a Disc worker process to execute the code in them by adding a class method (`#enqueue`) with the following signature:
@@ -146,6 +160,37 @@ end
 ComplexJob.enqueue(['first argument', { second: 'argument' }])
 ```
 
+### Job Status
+
+After a job is enqueued, you can check it's current status like so:
+
+```ruby
+Echoer.enqueue('test')
+#=> "DIa18101491133639148a574eb30cd2e12f25dcf8805a0SQ"
+
+Disc["DIa18101491133639148a574eb30cd2e12f25dcf8805a0SQ"]
+#=> {
+"id"=>"DIa18101491133639148a574eb30cd2e12f25dcf8805a0SQ",
+"queue"=>"test",
+"state"=>"queued",
+"repl"=>1,
+"ttl"=>86391,
+"ctime"=>1462488116652000000,
+"delay"=>0,
+"retry"=>8640,
+"nacks"=>0,
+"additional-deliveries"=>0,
+"nodes-delivered"=>["a18101496d562e412a459c6b114561efe95c57cc"],
+"nodes-confirmed"=>[],
+"next-requeue-within"=>8630995,
+"next-awake-within"=>8630495,
+"body"=>"{\"class\":\"Echoer\",\"arguments\":[\"test\"]}",
+"arguments"=>["test"],
+"class"=>"Echoer"}
+```
+
+This information might vary, as it's retreived from Disque via the [`SHOW`](https://github.com/antirez/disque#show-job-id) command, only `arguments` and `class` are filled in by Disc, which are added by using `Disc.deserialize` on the `body` value.
+
 ### Job Serialization
 
 Job information (their arguments, and class) need to be serialized in order to be stored
@@ -157,19 +202,6 @@ By default, these methods use by default the Ruby standard library json implemen
 
 2. You can override `Disc.serialize` and `Disc.deserialize` to use a different JSON implementation, or MessagePack, or whatever else you wish.
 
-
-## Settings
-
-Disc takes its configuration from environment variables.
-
-| ENV Variable       |  Default Value   | Description
-|:------------------:|:-----------------|:------------|
-| `QUEUES`           | 'default'        | The list of queues that `Disc::Worker` will listen to, it can be a single queue name or a list of comma-separated queues |
-| `DISC_CONCURRENCY` | '25'             | Amount of threads to spawn when Celluloid is available. |
-| `DISQUE_NODES`     | 'localhost:7711' | This is the list of Disque servers to connect to, it can be a single node or a list of comma-separated nodes |
-| `DISQUE_AUTH`      | ''               | Authorization credentials for Disque. |
-| `DISQUE_TIMEOUT`   | '100'            | Time in milliseconds that the client will wait for the Disque server to acknowledge and replicate a job |
-| `DISQUE_CYCLE`     | '1000'           | The client keeps track of which nodes are providing more jobs, after the amount of operations specified in cycle it tries to connect to the preferred node. |
 
 ## Error handling
 
