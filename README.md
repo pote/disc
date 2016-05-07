@@ -170,23 +170,24 @@ Echoer.enqueue('test')
 
 Disc["DIa18101491133639148a574eb30cd2e12f25dcf8805a0SQ"]
 #=> {
-"id"=>"DIa18101491133639148a574eb30cd2e12f25dcf8805a0SQ",
-"queue"=>"test",
-"state"=>"queued",
-"repl"=>1,
-"ttl"=>86391,
-"ctime"=>1462488116652000000,
-"delay"=>0,
-"retry"=>8640,
-"nacks"=>0,
-"additional-deliveries"=>0,
-"nodes-delivered"=>["a18101496d562e412a459c6b114561efe95c57cc"],
-"nodes-confirmed"=>[],
-"next-requeue-within"=>8630995,
-"next-awake-within"=>8630495,
-"body"=>"{\"class\":\"Echoer\",\"arguments\":[\"test\"]}",
-"arguments"=>["test"],
-"class"=>"Echoer"}
+  "arguments"=>["test"],
+  "class"=>"Echoer",
+  "id"=>"DIa18101491133639148a574eb30cd2e12f25dcf8805a0SQ",
+  "queue"=>"test",
+  "state"=>"queued",
+  "repl"=>1,
+  "ttl"=>86391,
+  "ctime"=>1462488116652000000,
+  "delay"=>0,
+  "retry"=>8640,
+  "nacks"=>0,
+  "additional-deliveries"=>0,
+  "nodes-delivered"=>["a18101496d562e412a459c6b114561efe95c57cc"],
+  "nodes-confirmed"=>[],
+  "next-requeue-within"=>8630995,
+  "next-awake-within"=>8630495,
+  "body"=>"{\"class\":\"Echoer\",\"arguments\":[\"test\"]}"
+}
 ```
 
 This information might vary, as it's retreived from Disque via the [`SHOW`](https://github.com/antirez/disque#show-job-id) command, only `arguments` and `class` are filled in by Disc, which are added by using `Disc.deserialize` on the `body` value.
@@ -254,8 +255,6 @@ Disc.queues
 
 Returner.enqueue('another test')
 #=> => {"default"=>[{:arguments=>["test argument"], :class=>"Returner", :options=>{}}, {:arguments=>["another test"], :class=>"Returner", :options=>{}}]}
-
-
 ```
 
 You can still flush the queues just as you would running on regular mode.
