@@ -197,7 +197,7 @@ This information might vary, as it's retreived from Disque via the [`SHOW`](http
 Job information (their arguments, and class) need to be serialized in order to be stored
 in Disque, to this end Disc uses the `Disc.serialize` and `Disc.deserialize` methods.
 
-By default, these methods use by default the Ruby standard library json implementation in order to serialize and deserialize job data, this has a few implications:
+By default, these methods use the Ruby standard library json implementation in order to serialize and deserialize job data, this has a few implications:
 
 1. Arguments passed to a job's `#enqueue` method need to be serializable by `Disc.serialize` and parsed back by `Disc.deserialize`, so by default you can't pass complex Ruby objects like a `user` model, instead, pass `user.id`, and use that from your job code.
 
