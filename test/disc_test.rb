@@ -44,9 +44,9 @@ scope do
       { class: 'Echoer', arguments: ['one argument', { random: 'data' }, 3] }
     )
 
-    job_class, arguments = Disc.load_job(serialized_job)
+    job_instance, arguments = Disc.load_job(serialized_job)
 
-    assert_equal Echoer, job_class
+    assert_equal Echoer, job_instance.class
     assert arguments.is_a?(Array)
     assert_equal 3, arguments.count
     assert_equal 'one argument', arguments.first

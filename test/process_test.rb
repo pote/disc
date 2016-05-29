@@ -5,6 +5,7 @@ require 'timeout'
 
 require_relative '../examples/echoer'
 require_relative '../examples/failer'
+require_relative '../examples/identifier'
 
 prepare do
   Disc.disque_timeout = 1 # 1ms so we don't wait at all.
@@ -54,6 +55,22 @@ scope do
       jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
       assert jobs.nil?
       assert output.grep(/First: one argument, Second: {"random"=>"data"}, Third: 3/).any?
+    end
+  end
+
+  test 'running jobs have access to their Disque job ID' do
+    Identifier.enqueue
+    disque_jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
+    disque_id = disque_jobs.first[1]
+
+    # Put job back in the queue.
+    Disc.disque.call('NACK', disque_id)
+
+    run('QUEUES=test ruby -Ilib bin/disc -r ./examples/identifier') do |cout, pid|
+      output = Timeout.timeout(1) { cout.take(3) }
+      jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
+      assert jobs.nil?
+      assert output.grep(/Working with Disque ID: #{ disque_id }/).any?
     end
   end
 end

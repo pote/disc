@@ -73,7 +73,7 @@ class Disc
   #     * An instance of the given job class
   #     * An array of arguments to pass to the job's `#perorm` class.
   #
-  def self.load_job(serialized_job)
+  def self.load_job(serialized_job, disque_id = nil)
     begin
       job_data = Disc.deserialize(serialized_job)
     rescue => err
@@ -86,7 +86,14 @@ class Disc
       raise Disc::UnknownJobClassError.new(err)
     end
 
-    return [job_class, job_data['arguments']]
+    begin
+      job_instance = job_class.new
+      job_instance.disque_id = disque_id
+    rescue => err
+      raise Disc::NonJobClassError.new(err)
+    end
+
+    return [job_instance, job_data['arguments']]
   end
 end
 

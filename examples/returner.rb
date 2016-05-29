@@ -1,7 +1,7 @@
 class Returner
   include Disc::Job
 
-  def self.perform(argument)
+  def perform(argument)
     return argument
   end
 end

@@ -4,7 +4,7 @@ class Greeter
   include Disc::Job
   disc queue: 'test_medium'
 
-  def self.perform(string)
+  def perform(string)
     $stdout.puts(string)
   end
 end

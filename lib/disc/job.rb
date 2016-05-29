@@ -1,4 +1,5 @@
 module Disc::Job
+  attr_accessor :disque_id
 
   def self.included(base)
     base.extend(ClassMethods)
@@ -24,6 +25,10 @@ module Disc::Job
 
     def queue
       @queue || Disc.default_queue
+    end
+
+    def perform(arguments)
+      self.new.perform(*arguments)
     end
 
     ## Disc's `#enqueue` is the main user-facing method of a Disc job, it
