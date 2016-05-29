@@ -23,7 +23,7 @@ Disc fills the gap between your Ruby service objects and [antirez](http://antire
     include Disc::Job
     disc queue: 'urgent'
 
-    def self.perform(type)
+    def perform(type)
       # perform rather lengthy operations here.
     end
   end
@@ -94,7 +94,7 @@ Signature documentation follows:
 ## Parameters:
 #
 ## `arguments`  - an optional array of arguments with which to execute
-#                 the job's `self.perform` method.
+#                 the job's `perform` method.
 #
 # `at`          - an optional named parameter specifying a moment in the
 #                 future in which to run the job, must respond to
@@ -142,7 +142,7 @@ Signature documentation follows:
 
 You can see [Disque's ADDJOB documentation](https://github.com/antirez/disque#addjob-queue_name-job-ms-timeout-replicate-count-delay-sec-retry-sec-ttl-sec-maxlen-count-async) for more details
 
-When a Disc worker process is assigned a job, it will create a new intance of the job's class and execute the `self.perform` method with whatever arguments were previously passed to `#enqueue`.
+When a Disc worker process is assigned a job, it will create a new intance of the job's class and execute the `perform` method with whatever arguments were previously passed to `#enqueue`.
 
 Example:
 
@@ -151,7 +151,7 @@ class ComplexJob
   include Disc::Job
   disc queue: 'urgent'
 
-  def self.perform(first_parameter, second_parameter)
+  def perform(first_parameter, second_parameter)
     # do things...
   end
 end
@@ -317,7 +317,7 @@ end
 class CluJob < ActiveJob::Base
   queue_as :urgent
 
-  def self.perform(*args)
+  def perform(*args)
     # Try to take over The Grid here...
   end
 end
