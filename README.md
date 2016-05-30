@@ -160,7 +160,32 @@ end
 ComplexJob.enqueue(['first argument', { second: 'argument' }])
 ```
 
-### Job Status
+### Managing Jobs
+
+Disc jobs can be managed by knowing their disque ID, this id is returned by the `#enqueue` method so you can control the job or query it's state from your application code.
+
+```ruby
+Echoer.enqueue('test')
+#=> "DIa18101491133639148a574eb30cd2e12f25dcf8805a0SQ"
+```
+
+The disque ID is also available from within the context of an executing job, you can access it via `self.disque_id` if you wish to do things like notify Disque that a long-running job is still being executed.
+
+```ruby
+class LongJob
+  include Disc::Job
+
+  def perform(first_parameter, second_parameter)
+    # Do things that take a while.
+
+    Disc.disque.call('WORKING', self.disque_id)
+
+    # Do more things that take a while.
+  end
+end
+```
+
+#### Job Status
 
 After a job is enqueued, you can check it's current status like so:
 
@@ -191,6 +216,10 @@ Disc["DIa18101491133639148a574eb30cd2e12f25dcf8805a0SQ"]
 ```
 
 This information might vary, as it's retreived from Disque via the [`SHOW`](https://github.com/antirez/disque#show-job-id) command, only `arguments` and `class` are filled in by Disc, which are added by using `Disc.deserialize` on the `body` value.
+
+#### Do everything Disque can.
+
+Access to the disque ID allows us to leverage the Disque API to manage the job, you can execute Disque commands via the `Disc.disque.call()` method, see [the Disque API](https://github.com/antirez/disque#main-api) to see all the commands available.
 
 ### Job Serialization
 
