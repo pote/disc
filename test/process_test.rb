@@ -60,9 +60,9 @@ scope do
 
     run('QUEUES=test ruby -Ilib bin/disc -r ./examples/identifier') do |cout, pid|
       output = Timeout.timeout(1) { cout.take(3) }
-      jobs = Disc.disque.fetch(from: ['test'], timeout: Disc.disque_timeout, count: 1)
-      assert jobs.nil?
       assert output.grep(/Working with Disque ID: #{ disque_id }/).any?
+
+      assert_equal 0, Disc.qlen(Identifier.queue)
     end
   end
 end
