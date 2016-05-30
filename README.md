@@ -217,7 +217,7 @@ Disc["DIa18101491133639148a574eb30cd2e12f25dcf8805a0SQ"]
 
 This information might vary, as it's retreived from Disque via the [`SHOW`](https://github.com/antirez/disque#show-job-id) command, only `arguments` and `class` are filled in by Disc, which are added by using `Disc.deserialize` on the `body` value.
 
-#### Do everything Disque can.
+#### Do everything Disque can
 
 Access to the disque ID allows us to leverage the Disque API to manage the job, you can execute Disque commands via the `Disc.disque.call()` method, see [the Disque API](https://github.com/antirez/disque#main-api) to see all the commands available.
 
