@@ -23,6 +23,15 @@ scope do
     assert_equal 0, Disc.qlen('test')
   end
 
+  test "simple enqueuing should work " do
+    Echoer.enqueue('one thing')
+
+    assert_equal 1, Disc.queues['test'].count
+    assert Disc.queues['test'].first.has_key?(:arguments)
+    assert_equal 1, Disc.queues['test'].first[:arguments].count
+    assert_equal 'one thing', Disc.queues['test'].first[:arguments].first
+  end
+
   test "testing mode enqueue jobs into an in-memory list by default" do
     Echoer.enqueue(['one argument', { random: 'data' }, 3])
 
