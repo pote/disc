@@ -2,9 +2,8 @@
 
 Disc fills the gap between your Ruby service objects and [antirez](http://antirez.com/)'s wonderful [Disque](https://github.com/antirez/disque) backend.
 
-<a href="https://www.flickr.com/photos/noodlefish/5321412234" target="blank_">
+
 ![Disc Wars!](https://cloud.githubusercontent.com/assets/437/8634016/b63ee0f8-27e6-11e5-9a78-51921bd32c88.jpg)
-</a>
 
 ## Basic Usage
 
